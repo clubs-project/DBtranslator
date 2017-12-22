@@ -1,0 +1,29 @@
+Marian installation for fast NMT translation
+
+sudo apt-get install libboost-all-dev
+
+git clone https://github.com/marian-nmt/marian.git
+
+cd marian
+mkdir build && cd build
+cmake .. -DCUDA=off
+make -j
+# if you need the bindings
+make python
+
+
+# Running the decoder
+./marian/build/amun -m models/model_L1L2w3_v80k.iter1620000_adaptepoch4.npz -s models/general.tc50shuf.w.bpe.L1.json -t models/general.tc50shuf.w.bpe.L2.json <<< "<2fr> This is a test ."
+
+
+
+Exact fields to be translated?
+- TI vs. TID vs. TI_DE vs. TI_anzeige vs. TI_orig... (TITRAN_DE)
+
+    * TI_orig, TI_orig_code
+
+    * TI_D, TI_E, TI_F, TI_S (this is currently in testing)
+
+- AB vs. AB_D vs. ABHR_DE...
+     *  ABHR_D & ABNHR_D
+- CTD vs CTDL vs CTDH (first analysis with CTlanL)
