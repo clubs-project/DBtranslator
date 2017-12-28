@@ -1,13 +1,19 @@
 # coding: utf-8
 
-####################################################################
-# 
-####################################################################
+########################################################################
+# Extracts the titles from the PubPshyc database, applies a pre-process
+# tokenisation, truecasing and prepares the files to be translated with
+# Marian
+# Date: 22.12.2017
+# Author: cristinae
+########################################################################
+
 import urllib.request
 import urllib.parse
 import json
 import os
 
+path = "../titles/"
 
 #field = "TI_orig, TI_orig_code, TI_D, TI_E, TI_F, TI_S"
 fields = ['TI_D', 'TI_E', 'TI_F', 'TI_S']
@@ -16,7 +22,7 @@ name = "titles"
 solrBase = "http://136.199.85.71:8000/solr/"
 solrInstance = "pubpsych-core"
 #params = ['indent=on', 'wt=json', 'fl=ID,'+field, 'q=*:*', 'rows=1037540']
-params = ['indent=on', 'wt=json', 'fl=ID,'+field, 'q=*:*', 'rows=10000']
+params = ['indent=on', 'wt=json', 'fl=ID,'+field, 'q=*:*', 'rows=100']
 solrParams = '&'.join(params)
 solrURL = solrBase+solrInstance+"/select?"+solrParams
 
@@ -34,37 +40,47 @@ for i,d in enumerate(data['response']['docs']):
     #directory = str(d['ID'])
     id = str(d['ID'])
     pos = id.index('_') 
-    directory = id[:pos+2]
+    directory = path+id[:pos+1]
     if not os.path.exists(directory):
        os.makedirs(directory)
-    f = open(directory+'/'+ name+'.txt', 'a')
+    fes = open(directory+'/'+ name+'.es', 'a')
+    fen = open(directory+'/'+ name+'.en', 'a')
+    ffr = open(directory+'/'+ name+'.fr', 'a')
+    fde = open(directory+'/'+ name+'.de', 'a')
     # Extract the desired field and prepare it to translate into the other languages
     # TI_D, TI_E, TI_F, TI_S
     tit = 'TI_D'
     if tit in d:
+       title = str(d[tit]) + str('\n')
        header = id+' '+tit+str('\t')+'<titles> ' 
-       f.write(header + '<2es> ' + str(d[tit]) + str('\n'))
-       f.write(header + '<2en> ' + str(d[tit]) + str('\n'))
-       f.write(header + '<2fr> ' + str(d[tit]) + str('\n'))
+       fde.write(header + '<2es> ' + title) 
+       fde.write(header + '<2en> ' + title) 
+       fde.write(header + '<2fr> ' + title) 
     tit = 'TI_E'
     if tit in d:
+       title = str(d[tit]) + str('\n')
        header = id+' '+tit+str('\t')+'<titles> ' 
-       f.write(header + '<2es> ' + str(d[tit]) + str('\n'))
-       f.write(header + '<2de> ' + str(d[tit]) + str('\n'))
-       f.write(header + '<2fr> ' + str(d[tit]) + str('\n'))
+       fen.write(header + '<2es> ' + title) 
+       fen.write(header + '<2de> ' + title)
+       fen.write(header + '<2fr> ' + title)
     tit = 'TI_F'
     if tit in d:
+       title = str(d[tit]) + str('\n')
        header = id+' '+tit+str('\t')+'<titles> ' 
-       f.write(header + '<2es> ' + str(d[tit]) + str('\n'))
-       f.write(header + '<2de> ' + str(d[tit]) + str('\n'))
-       f.write(header + '<2en> ' + str(d[tit]) + str('\n'))
+       ffr.write(header + '<2es> ' + title)
+       ffr.write(header + '<2de> ' + title)
+       ffr.write(header + '<2en> ' + title)
     tit = 'TI_S'
     if tit in d:
+       title = str(d[tit]) + str('\n')
        header = id+' '+tit+str('\t')+'<titles> ' 
-       f.write(header + '<2fr>' + str(d[tit]) + str('\n'))
-       f.write(header + '<2de>' + str(d[tit]) + str('\n'))
-       f.write(header + '<2en>' + str(d[tit]) + str('\n'))
-    f.close()     
+       fes.write(header + '<2fr> ' + title)
+       fes.write(header + '<2de> ' + title)
+       fes.write(header + '<2en> ' + title)
+    fes.close()     
+    fen.close()     
+    ffr.close()     
+    fde.close()     
 
 
 
