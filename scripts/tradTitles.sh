@@ -13,7 +13,7 @@
 outPath="../"
 models="../models"
 bins="../thirdparties"
-sizeDB=10
+sizeDB=3
 #sizeDB=1037540
 
 # Override by command line arguments:
@@ -30,7 +30,7 @@ where:
     -f  field to translate [tit|abs]
     -a  type of abstract [ABHR|ABNHR]
 "
-while getopts ':hfa:' option; do
+while getopts ':ht:f:a:' option; do
   case "$option" in
     h) echo "$usage"
        exit
@@ -54,12 +54,12 @@ done
 
 # Download the titles from the DB and prepare the format for translation
 # A file per subDB and language is created (pre-processing depends on the language)
-if [ field == "tit" ]; then
-   outPath=$outPath+'titles'
-   #python3 preproTits4trad.py $outPath $sizeDB
-elif [ field == "abs" ]; then
-   outPath=$outPath+'abstracts'
-   #python3 preproAbsts4trad.py $outPath $sizeDB $absType
+if [ $field == "tit" ]; then
+   outPath=$outPath'titles/'
+   python3 preproTits4trad.py $outPath $sizeDB
+elif [ $field == "abs" ]; then
+   outPath=$outPath'abstracts/'
+   python3 preproAbst4trad.py $outPath $sizeDB $absType
 fi
 
 # Extract text (with cuts) and normalise
@@ -93,8 +93,8 @@ for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do sed 's/\@\@ //g' $
 # Cleaning and upload format?
 for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do paste $i.head $i.2lang $i.trad1 > $i.trad; done; done;
 find . -size 0 -delete
-rm $outPath/*/*.tc $outPath/*/*.bpe $outPath/*/*.trad1 $outPath/*/*.trad2
-rm $outPath/*/*.2lang $outPath/*/*.labels $outPath/*/*.head
+#rm $outPath/*/*.tc $outPath/*/*.bpe $outPath/*/*.trad1 $outPath/*/*.trad2
+#rm $outPath/*/*.2lang $outPath/*/*.labels $outPath/*/*.head
 
 # In case of abstract translation, abstracts must be reconstructed
 if [ field == "abs" ]; then

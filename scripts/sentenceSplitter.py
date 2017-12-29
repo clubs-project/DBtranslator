@@ -74,5 +74,7 @@ def split_into_sentences(prefixes, text):
     sentences = text.split("<stop>")
     sentences = sentences[:-1]
     sentences = [s.strip() for s in sentences]
+    if(sentences[-1]==''):
+       del(sentences[-1])
 
     return sentences
