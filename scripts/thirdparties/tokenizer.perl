@@ -30,7 +30,7 @@ if  (eval {require Thread;1;}) {
 }
 
 #my $mydir = "$RealBin/../share/nonbreaking_prefixes";
-my $mydir = "./nonbreaking_prefixes";
+my $mydir = "./thirdparties/nonbreaking_prefixes";
 
 my %NONBREAKING_PREFIX = ();
 my @protected_patterns = ();

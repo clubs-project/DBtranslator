@@ -12,7 +12,7 @@
 # Default paths assume this is run from ./scripts
 outPath="../"
 models="../models"
-bins="../thirdparties"
+bins="./thirdparties"
 sizeDB=3
 #sizeDB=1037540
 
@@ -63,15 +63,15 @@ elif [ $field == "abs" ]; then
 fi
 
 # Extract text (with cuts) and normalise
-for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do cut -f2 $i > $i.cut; cut -f1 $i > $i.head; cut -d' ' -f-2 $i.cut > $i.labels;  cut -d' ' -f3- $i.cut > $i.text;  cut -d' ' -f2 $i.cut > $i.2lang; perl normalize-punctuation.perl -l $j < $i.text > $i.norm; done; done;
+for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do cut -f2 $i > $i.cut; cut -f1 $i > $i.head; cut -d' ' -f-2 $i.cut > $i.labels;  cut -d' ' -f3- $i.cut > $i.text;  cut -d' ' -f2 $i.cut > $i.2lang; perl $bins/normalize-punctuation.perl -l $j < $i.text > $i.norm; done; done;
 
 # Tokenisation
-for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do perl tokenizer.perl -x -threads $threads -no-escape -l $j < $i.norm > $i.tok; done; done;
+for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do perl $bins/tokenizer.perl -x -threads $threads -no-escape -l $j < $i.norm > $i.tok; done; done;
 rm $outPath/*/*.cut
 rm $outPath/*/*.text
 
 # Truecasing
-for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do perl truecase.perl --model $models/modelTC.EpWP.$j < $i.tok > $i.tc; done; done;
+for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do perl $bins/truecase.perl --model $models/modelTC.EpWP.$j < $i.tok > $i.tc; done; done;
 rm $outPath/*/*.norm
 
 # Cleaning
@@ -81,14 +81,14 @@ rm $outPath/*/*.tok
 for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do mv $i.tc2 $i.tc; done; done;
 
 # BPE
-for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do python apply_bpe.py -c $models/L1L2.allw.bpe < $i.tc > $i.bpe; done; done;
+for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do python $bins/apply_bpe.py -c $models/L1L2.allw.bpe < $i.tc > $i.bpe; done; done;
 
 # Running the decoder
 for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do ../marian/build/amun -m $models/model_L1L2w3_v80k.iter1620000_adaptepoch4.npz $models/model_L1L2w3_v80k.iter1640000_adaptepoch5.npz -s $models/general.tc50shuf.w.bpe.L1.json -t $models/general.tc50shuf.w.bpe.L2.json  --cpu-threads $threads --input-file $i.bpe -b 6 --normalize --mini-batch 64  --maxi-batch 100  --log-progress off --log-info off > $i.trad.bpe; done; done;
 find . -size 0 -delete
 
 # de-BPE and de-tokenise
-for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do sed 's/\@\@ //g' $i.trad.bpe > $i.trad2; perl detokenizer.perl -q -u -l $j < $i.trad2 > $i.trad1; done; done;
+for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do sed 's/\@\@ //g' $i.trad.bpe > $i.trad2; perl $bins/detokenizer.perl -q -u -l $j < $i.trad2 > $i.trad1; done; done;
 
 # Cleaning and upload format?
 for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do paste $i.head $i.2lang $i.trad1 > $i.trad; done; done;
