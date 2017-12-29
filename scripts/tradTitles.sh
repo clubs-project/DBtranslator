@@ -1,12 +1,66 @@
 #!/bin/bash
-# NOTE: Everything can be parallelised
-outPath="../titles"
+
+# #######################################################################
+# Translation of PubPhsyc titles and abstracts
+# Author: cristinae
+# Date: 29.11.2017
+#
+# NOTE: Everything can be further parallelised at least per language
+# #######################################################################
+
+# Initialisation
+# Default paths assume this is run from ./scripts
+outPath="../"
+models="../models"
+bins="../thirdparties"
+sizeDB=10
+#sizeDB=1037540
+
+# Override by command line arguments:
+field='tit'
+absType='ABHR'
 threads=4
 
-# Download the titles from the DB and prepare the format for translation7
+# Command line arguments
+usage="$(basename "$0") -t # -f tit|abs [-a ABHR|ABNHR] [-h] 
+
+where:
+    -h  show this help text
+    -t  number of threads
+    -f  field to translate [tit|abs]
+    -a  type of abstract [ABHR|ABNHR]
+"
+while getopts ':hfa:' option; do
+  case "$option" in
+    h) echo "$usage"
+       exit
+       ;;
+    t) threads=$OPTARG
+       ;;
+    f) field=$OPTARG
+       ;;
+    a) absType=$OPTARG
+       ;;
+    :) printf "missing argument for -%s\n" "$OPTARG" >&2
+       echo "$usage" >&2
+       exit 1
+       ;;
+   \?) printf "illegal option: -%s\n" "$OPTARG" >&2
+       echo "$usage" >&2
+       exit 1
+       ;;
+  esac
+done
+
+# Download the titles from the DB and prepare the format for translation
 # A file per subDB and language is created (pre-processing depends on the language)
-# TODO: outPath is hardcoded
-python3 preproTits4trad.py
+if [ field == "tit" ]; then
+   outPath=$outPath+'titles'
+   #python3 preproTits4trad.py $outPath $sizeDB
+elif [ field == "abs" ]; then
+   outPath=$outPath+'abstracts'
+   #python3 preproAbsts4trad.py $outPath $sizeDB $absType
+fi
 
 # Extract text (with cuts) and normalise
 for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do cut -f2 $i > $i.cut; cut -f1 $i > $i.head; cut -d' ' -f-2 $i.cut > $i.labels;  cut -d' ' -f3- $i.cut > $i.text;  cut -d' ' -f2 $i.cut > $i.2lang; perl normalize-punctuation.perl -l $j < $i.text > $i.norm; done; done;
@@ -17,7 +71,7 @@ rm $outPath/*/*.cut
 rm $outPath/*/*.text
 
 # Truecasing
-for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do perl truecase.perl --model ../models/modelTC.EpWP.$j < $i.tok > $i.tc; done; done;
+for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do perl truecase.perl --model $models/modelTC.EpWP.$j < $i.tok > $i.tc; done; done;
 rm $outPath/*/*.norm
 
 # Cleaning
@@ -27,21 +81,24 @@ rm $outPath/*/*.tok
 for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do mv $i.tc2 $i.tc; done; done;
 
 # BPE
-for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do python apply_bpe.py -c ../models/L1L2.allw.bpe < $i.tc > $i.bpe; done; done;
+for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do python apply_bpe.py -c $models/L1L2.allw.bpe < $i.tc > $i.bpe; done; done;
 
 # Running the decoder
-for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do ../marian/build/amun -m ../models/model_L1L2w3_v80k.iter1620000_adaptepoch4.npz ../models/model_L1L2w3_v80k.iter1640000_adaptepoch5.npz -s ../models/general.tc50shuf.w.bpe.L1.json -t ../models/general.tc50shuf.w.bpe.L2.json  --cpu-threads $threads --input-file $i.bpe -b 6 --normalize --mini-batch 64  --maxi-batch 100  --log-progress 'off' --log-info 'off' > $i.trad.bpe; done; done;
+for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do ../marian/build/amun -m $models/model_L1L2w3_v80k.iter1620000_adaptepoch4.npz $models/model_L1L2w3_v80k.iter1640000_adaptepoch5.npz -s $models/general.tc50shuf.w.bpe.L1.json -t $models/general.tc50shuf.w.bpe.L2.json  --cpu-threads $threads --input-file $i.bpe -b 6 --normalize --mini-batch 64  --maxi-batch 100  --log-progress off --log-info off > $i.trad.bpe; done; done;
 find . -size 0 -delete
+
+# de-BPE and de-tokenise
+for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do sed 's/\@\@ //g' $i.trad.bpe > $i.trad2; perl detokenizer.perl -q -u -l $j < $i.trad2 > $i.trad1; done; done;
 
 # Cleaning and upload format?
-#
-for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; sed 's/\@\@ //g' $i.trad.bpe > $i.trad2;  paste $i.head $i.2lang $i.trad2 > $i.trad ; done; done;
+for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do paste $i.head $i.2lang $i.trad1 > $i.trad; done; done;
 find . -size 0 -delete
-rm $outPath/*/*.tc
-rm $outPath/*/*.bpe
-rm $outPath/*/*.trad2
-rm $outPath/*/*.2lang
-rm $outPath/*/*.labels
-rm $outPath/*/*.head
+rm $outPath/*/*.tc $outPath/*/*.bpe $outPath/*/*.trad1 $outPath/*/*.trad2
+rm $outPath/*/*.2lang $outPath/*/*.labels $outPath/*/*.head
 
+# In case of abstract translation, abstracts must be reconstructed
+if [ field == "abs" ]; then
+    for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do python3 postproAbst.py  $i.trad  $i.tradjoint; done; done;
+    for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do mv $i.tradjoint $i.trad; done; done;
+fi
 
