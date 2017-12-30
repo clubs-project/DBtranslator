@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """ Extracts the abstracts from the PubPshyc database, and prepares the files 
- to be translated with Marian
- Date: 29.12.2017
- Author: cristinae
+    to be translated with Marian
+    Date: 29.12.2017
+    Author: cristinae
 """
 
 import urllib.request
@@ -38,6 +38,7 @@ def main(path, rows, absType):
 
     # Go through each doc
     print("Writing response")
+    print("WARNING: New downloads will be appended to previous files")
     for i,d in enumerate(data['response']['docs']):
         # Create a directory for the document family in case it is not there
         # a family correspond to a DB more or less
@@ -51,6 +52,8 @@ def main(path, rows, absType):
         ffr = open(directory+'/'+ name+'.fr', 'a')
         fde = open(directory+'/'+ name+'.de', 'a')
         # Extract the abstract, split by sentence and prepare it to translate into the other languages
+        # There was no corpus for <abstracts> <2fr>
+        # NOTE: We need backtranslation in the future
         fieldLabel = fields[0] #'D'
         if fieldLabel in d:
            header = id+' '+fieldLabel+str('\t')+'<'+name+'> ' 
@@ -63,7 +66,7 @@ def main(path, rows, absType):
                fde.write(header + '<2en> ' + abstract) 
            for sent in sentences:
                abstract = sent + str('\n')
-               fde.write(header + '<2fr> ' + abstract) 
+               fde.write(id+' '+fieldLabel+str('\t')+ '<2fr> ' + abstract) 
         fieldLabel = fields[1] #'E'
         if fieldLabel in d:
            header = id+' '+fieldLabel+str('\t')+'<'+name+'> ' 
@@ -76,7 +79,7 @@ def main(path, rows, absType):
                fen.write(header + '<2de> ' + abstract)
            for sent in sentences:
                abstract = sent + str('\n')
-               fen.write(header + '<2fr> ' + abstract)
+               fen.write(id+' '+fieldLabel+str('\t')+ '<2fr> ' + abstract)
         fieldLabel = fields[2] #'F'
         if fieldLabel in d:
            header = id+' '+fieldLabel+str('\t')+'<'+name+'> ' 
@@ -96,7 +99,7 @@ def main(path, rows, absType):
            sentences = SS.splitter('es', str(d[fieldLabel]))
            for sent in sentences:
                abstract = sent + str('\n')
-               fes.write(header + '<2fr> ' + abstract)
+               fes.write(id+' '+fieldLabel+str('\t')+ '<2fr> ' + abstract)
            for sent in sentences:
                abstract = sent + str('\n')
                fes.write(header + '<2de> ' + abstract)

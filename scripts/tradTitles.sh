@@ -59,16 +59,20 @@ if [ $field == "tit" ]; then
    python3 preproTits4trad.py $outPath $sizeDB
 elif [ $field == "abs" ]; then
    outPath=$outPath'abstracts/'
-   python3 preproAbst4trad.py $outPath $sizeDB $absType
+   #python3 preproAbst4trad.py $outPath $sizeDB $absType
 fi
 
 # Extract text (with cuts) and normalise
-for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do cut -f2 $i > $i.cut; cut -f1 $i > $i.head; cut -d' ' -f-2 $i.cut > $i.labels;  cut -d' ' -f3- $i.cut > $i.text;  cut -d' ' -f2 $i.cut > $i.2lang; perl $bins/normalize-punctuation.perl -l $j < $i.text > $i.norm; done; done;
+# (long list of commands because sentences in French behave different)
+for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do cut -f2 $i > $i.cut; cut -f1 $i > $i.head; 
+   cat $i.cut | rev | cut -d">" -f2-  | rev > $i.labels; sed -i 's/$/>/' $i.labels;
+   cat $i.cut | rev | cut -d">" -f1  | rev > $i.text; 
+   cut -d'2' -f2- $i.cut | cut -d' ' -f1 > $i.tmp;  sed 's/^/<2/' $i.tmp > $i.2lang; perl $bins/normalize-punctuation.perl -l $j < $i.text > $i.norm; done; done;
+#for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do cut -f2 $i > $i.cut; cut -f1 $i > $i.head; cut -d'2' -f2- $i.cut | cut -d' ' -f1 > $i.tmp;  cut -d' ' -f3- $i.cut > $i.text;  cut -d' ' -f2 $i.cut > $i.2lang; perl $bins/normalize-punctuation.perl -l $j < $i.text > $i.norm; done; done;
 
 # Tokenisation
 for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do perl $bins/tokenizer.perl -x -threads $threads -no-escape -l $j < $i.norm > $i.tok; done; done;
-rm $outPath/*/*.cut
-rm $outPath/*/*.text
+rm $outPath/*/*.cut  $outPath/*/*.tmp $outPath/*/*.text
 
 # Truecasing
 for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do perl $bins/truecase.perl --model $models/modelTC.EpWP.$j < $i.tok > $i.tc; done; done;
@@ -84,7 +88,7 @@ for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do mv $i.tc2 $i.tc; d
 for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do python $bins/apply_bpe.py -c $models/L1L2.allw.bpe < $i.tc > $i.bpe; done; done;
 
 # Running the decoder
-for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do ../marian/build/amun -m $models/model_L1L2w3_v80k.iter1620000_adaptepoch4.npz $models/model_L1L2w3_v80k.iter1640000_adaptepoch5.npz -s $models/general.tc50shuf.w.bpe.L1.json -t $models/general.tc50shuf.w.bpe.L2.json  --cpu-threads $threads --input-file $i.bpe -b 6 --normalize --mini-batch 64  --maxi-batch 100  --log-progress off --log-info off > $i.trad.bpe; done; done;
+for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do ../marian/build/amun -m $models/model_L1L2w3_v80k.iter1620000_adaptepoch4.npz $models/model_L1L2w3_v80k.iter1640000_adaptepoch5.npz -s $models/general.tc50shuf.w.bpe.L1.json -t $models/general.tc50shuf.w.bpe.L2.json  --cpu-threads $threads --input-file $i.bpe -b 6 --normalize --mini-batch 64  --maxi-batch 100  --log-progress=off --log-info=off > $i.trad.bpe; done; done;
 find . -size 0 -delete
 
 # de-BPE and de-tokenise
@@ -93,8 +97,8 @@ for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do sed 's/\@\@ //g' $
 # Cleaning and upload format?
 for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do paste $i.head $i.2lang $i.trad1 > $i.trad; done; done;
 find . -size 0 -delete
-#rm $outPath/*/*.tc $outPath/*/*.bpe $outPath/*/*.trad1 $outPath/*/*.trad2
-#rm $outPath/*/*.2lang $outPath/*/*.labels $outPath/*/*.head
+rm $outPath/*/*.tc $outPath/*/*.bpe $outPath/*/*.trad1 $outPath/*/*.trad2
+rm $outPath/*/*.2lang $outPath/*/*.labels $outPath/*/*.head
 
 # In case of abstract translation, abstracts must be reconstructed
 if [ field == "abs" ]; then

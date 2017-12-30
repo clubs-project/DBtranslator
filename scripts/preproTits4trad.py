@@ -34,6 +34,7 @@ def main(path, rows):
 
     # Go through each doc
     print("Writing response")
+    print("WARNING: New downloads will be appended to previous files")
     for i,d in enumerate(data['response']['docs']):
         # Create a directory for the document family in case it is not there
         # a family correspond to a DB more or less
