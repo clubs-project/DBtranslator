@@ -7,8 +7,26 @@
     Author: cristinae
 """
 
+import sys
+
 def main(inF, outF):
 
+    fOUT = open(outF, 'w')
+    with open(inF) as f:
+       id = 'empty'
+       text = ''
+       for line in f:
+           line = line.strip()
+           fields = line.split('>\t')
+           if (fields[0] == id):
+              text = text + " " + fields[1]
+           else:
+              if text:
+                 fOUT.write(text+"\n")
+              id = fields[0]
+              text = line
+       fOUT.write(text+"\n")
+    fOUT.close()   
 
 
 if __name__ == "__main__":
