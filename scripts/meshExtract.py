@@ -9,7 +9,9 @@ reload(sys);
 #sys.setdefaultencoding("utf8")
 
 def extractParentheseses(term):
-
+    ''' Given a term with possibly specifications between parentheses 
+        returns the main term and the specifications in case there are
+    '''
     ct = ""
     area = []
     # if it has "areas"
@@ -22,6 +24,9 @@ def extractParentheseses(term):
 
 
 def extractMain(term):
+    ''' Given a term with possibly specifications between parentheses 
+        returns the main term
+    '''
     ct = ""
     area = []
     # if it has "areas"
@@ -176,4 +181,23 @@ if __name__ == "__main__":
         sys.stderr.write('Usage: python3 %s \n' % sys.argv[0])
         sys.exit(1)
     main()
+
+
+# sort -u meshSplit.eskey.txt > meshSplit2.eskey.txt
+# remove terms in parentheses:
+# perl -0777 -pe 's/ \(.*?\)//sg' wp.enkey.txt > wp.enkey2.txt
+
+# paste -d'|||es:|||de:|||fr:' wp.en /dev/null  /dev/null  /dev/null  /dev/null  /dev/null  wp.es /dev/null  /dev/null  /dev/null  /dev/null  /dev/null  wp.de /dev/null  /dev/null  /dev/null  /dev/null  /dev/null  wp.fr | sed  's/_/ /g' > wp.enkey.txt
+# paste -d'|||en:|||de:|||fr:' wp.es /dev/null  /dev/null  /dev/null  /dev/null  /dev/null  wp.en /dev/null  /dev/null  /dev/null  /dev/null  /dev/null  wp.de /dev/null  /dev/null  /dev/null  /dev/null  /dev/null  wp.fr | sed  's/_/ /g' > wp.eskey.txt
+#paste -d'|||en:|||es:|||de:' wp.fr /dev/null  /dev/null  /dev/null  /dev/null  /dev/null  wp.en /dev/null  /dev/null  /dev/null  /dev/null  /dev/null  wp.es /dev/null  /dev/null  /dev/null  /dev/null  /dev/null  wp.de | sed  's/_/ /g' > wp.frkey.txt
+#paste -d'|||en:|||es:|||fr:' wp.de /dev/null  /dev/null  /dev/null  /dev/null  /dev/null  wp.en /dev/null  /dev/null  /dev/null  /dev/null  /dev/null  wp.es /dev/null  /dev/null  /dev/null  /dev/null  /dev/null  wp.fr | sed  's/_/ /g' > wp.dekey.txt
+
+# cat meshSplit2.dekey.txt wp.dekey2.txt  | sort -u > quad.dekey.txt
+# cat meshSplit2.enkey.txt wp.enkey2.txt  | sort -u > quad.enkey.txt
+# cat meshSplit2.frkey.txt wp.frkey2.txt  | sort -u > quad.frkey.txt
+# cat meshSplit2.eskey.txt wp.eskey2.txt  | sort -u > quad.eskey.txt
+
+
+
+
 
