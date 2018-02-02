@@ -2,22 +2,23 @@
 # -*- coding: utf-8 -*-
 
 """ Translates the controlled terms previously extracted with preproField4trad.py.
-    MeSH+Wikipedia+Manual quad-lexicons are used. Translation at word level is applied if
-    the complete CT is not in the dictionary, and the source is used as translation
-    in case it is missing
+    MeSH+Wikipedia+Apertium+manual quad-lexicons are used. 
+    Translation at word level is applied if the complete CT is not in the dictionary, 
+    and the source is used as translation in case it is missing
     Date: 02.01.2018
     Author: cristinae
 """
 
 import sys
 import os.path
+import unicodedata
 
 ctPath = "../models/CT/"
 
-numSpecsUntrad=0
-numTermsUntrad=0
-numTerms=0
-numSpecs=0
+numTermsUntrad = 0
+numTerms = 0
+numWordsUntrad = 0
+numWords = 0
 
 def rreplace(s, old, new, occurrence):
     """ Replace last occurrence of a substring in a string
@@ -26,6 +27,12 @@ def rreplace(s, old, new, occurrence):
     li = s.rsplit(old, occurrence)
     return new.join(li)
 
+def remove_diacritic(input):
+    '''
+    Accept a unicode string, and return a normal string (bytes in Python 3)
+    without any diacritical marks.
+    '''
+    return unicodedata.normalize('NFKD', input).encode('ASCII', 'ignore')
 
 def extractParentheseses(term):
     """ Given a term with possibly specifications between parentheses 
@@ -42,21 +49,71 @@ def extractParentheseses(term):
     else:
        return "", term
 
+def cleanEndString(toClean):
+    """ Removes ',' and '"' from the end of the string
+    """
+    clean=toClean.replace('Ü', 'ü')
+    if len(clean)>1:
+       if clean[-1] == ',': 
+          clean = clean[:-1]
+    if len(clean)>1:
+       if clean[-1] == '"': 
+          clean = clean[:-1]
+    return clean
 
-def translate(string, ctDict, lang):
+def removePluralEnding(plural):
+    """ Removes -s, -n, -en and -e as plural forms 
+    """
+    global language
+    singular=plural
+    # for Spanish
+    if len(singular)>1 and language=="es":
+       if singular[:-2] == 'es': 
+          singular = singular[:-2]
+       elif singular[-1] == 's': 
+          singular = singular[:-1]
+    # for French
+    if len(singular)>1 and language=="fr":
+       if singular[-1] == 's': 
+          singular = singular[:-1]
+    # for English
+    if len(singular)>3 and language=="en":
+       if singular[:-3] == 'ies': 
+          return singular[:-3]+"y"
+    if len(singular)>2 and language=="en":
+       if singular[:-2] == 'es': 
+          return singular[:-2]
+    if len(singular)>1 and language=="en":
+       if singular[-1] == 's': 
+          singular = singular[:-1]
+    # for German
+    if len(singular)>2 and language=="de":
+       if singular[:-2] == 'er': 
+          return remove_diacritic(singular[:-2]).decode() #we need to remove the umlaut too
+       if singular[-1] == 'n': 
+          singular = singular[:-1]
+    if len(singular)>1 and language=="de":
+       if singular[-1] == 'e' or  singular[-1] == 's': 
+          singular = singular[:-1]
+
+    return singular
+
+def translate(string, ctDict, lang, complete, plurals, original):
     """ Translates an input string. If it is not found in the dictionary, the string
         is split into words and translated independently. If it words are not ther
         either, the source is copied
     """
 
-    global numSpecsUntrad
     global numTermsUntrad
     global numTerms
-    global numSpecs
+    global numWords
+    global numWordsUntrad
+    global l1
 
     toTrad = ""
     stringTrad = ""
     
+    string=cleanEndString(string)
     # we check for all the capitalizations
     capitalized = False
     if string.istitle():
@@ -69,8 +126,12 @@ def translate(string, ctDict, lang):
        toTrad = string.capitalize()
  
     if toTrad in ctDict:
+       if (complete and lang==l1):
+           numTerms += 1
+           words = string.split(" ")
+           numWords = numWords + len(words)
        trads = ctDict[toTrad].split("|||")
-       #print(trads)
+       #(trads)
        for trad in trads:
            if trad.startswith(lang):
               translation = trad.replace(lang+":","")
@@ -81,22 +142,32 @@ def translate(string, ctDict, lang):
                  translation = translation.lower()
               return stringTrad + translation 
     else:
+       if (complete and lang==l1):
+           numTermsUntrad += 1
        words = string.split(" ")
-       if len(words)==1:
-          return stringTrad + words[0]
+       complete = False
+       if len(words)==1 and plurals==True:
+          #if (original!=''):print(original)
+          if (original!='' and lang==l1): numWordsUntrad += 1
+          return stringTrad + original
+       if len(words)==1 and plurals==False:
+          newWord = removePluralEnding(words[0])
+          return translate(newWord, ctDict, lang, complete, True, words[0])
        for word in words:
-          return translate(word, ctDict, lang)
+          return translate(word, ctDict, lang, complete, False, word)
 
 
 def main(inF, outF):
 
-    global numSpecsUntrad
     global numTermsUntrad
     global numTerms
-    global numSpecs
+    global numWords
+    global numWordsUntrad
+    global language
+    global l1
 
     language = os.path.splitext(inF)[1].replace(".","")
-    ctFile = ctPath + "quad."+language+"key.txt"
+    ctFile = ctPath + "quadLexicon."+language+"key.txt"
 
     if(language=="en"):
        l1="fr"
@@ -144,26 +215,27 @@ def main(inF, outF):
            for term in termsArray[1:]:
                areas, ct = extractParentheseses(term)
                # translate the subunits
-               ctTradL1 = translate(ct, ctDict, l1)
-               numTerms += 1
-               if ct==ctTradL1:
-                  numTermsUntrad += 1
-               ctTradL2 = translate(ct, ctDict, l2)
-               ctTradL3 = translate(ct, ctDict, l3)
+               ctTradL1 = translate(ct, ctDict, l1, True, False, ct)
+               #numTerms += 1
+               #if ct==ctTradL1:
+               #   numTermsUntrad += 1
+               ctTradL2 = translate(ct, ctDict, l2, True, False, ct)
+               ctTradL3 = translate(ct, ctDict, l3, True, False, ct)
                termTrad1 = "'" + ctTradL1 
                termTrad2 = "'" + ctTradL2 
                termTrad3 = "'" + ctTradL3 
                if areas is not "":
                    for area in areas:
-                     areaTrad1 = translate(area, ctDict, l1)
+                     areaTrad1 = translate(area, ctDict, l1, True, False, ct)
                      termTrad1 = termTrad1 + " ("+areaTrad1+")"
-                     areaTrad2 = translate(area, ctDict, l2)
+                     areaTrad2 = translate(area, ctDict, l2, True, False, ct)
                      termTrad2 = termTrad2 + " ("+areaTrad2+")"
-                     areaTrad3 = translate(area, ctDict, l3)
+                     areaTrad3 = translate(area, ctDict, l3, True, False, ct)
                      termTrad3 = termTrad3 + " ("+areaTrad3+")"
-                     numSpecs += 1
-                     if area==areaTrad1: 
-                        numSpecsUntrad += 1
+                     #numSpecs += 1
+                     #if area==areaTrad1: 
+                        #print(area)
+                     #   numSpecsUntrad += 1
                lineTradL1 = lineTradL1 + termTrad1 + "', "
                lineTradL2 = lineTradL2 + termTrad2 + "', "
                lineTradL3 = lineTradL3 + termTrad3 + "', "
@@ -176,9 +248,6 @@ def main(inF, outF):
            fOUT.write(lineTradL2+"\n")
            fOUT.write(lineTradL3+"\n")
 
-    # CHECK: source==target doesn't mean untranslated
-    #print(str(numSpecsUntrad) + " untranslated specifications out of " + str(numSpecs))
-    #print(str(numTermsUntrad) + " untranslated main terms out of " + str(numTerms))
     fOUT.close()   
 
 
@@ -188,4 +257,8 @@ if __name__ == "__main__":
         sys.stderr.write('Usage: python3 %s inputFile outputFile\n' % sys.argv[0])
         sys.exit(1)
     main(sys.argv[1], sys.argv[2])
+
+    # CHECK: source==target doesn't mean untranslated
+    print(str(numWordsUntrad) + " untranslated words " + str(numWords)+ " translated words")
+    print(str(numTermsUntrad) + " untranslated main terms, " + str(numTerms) + " translated main terms")
 
