@@ -19,7 +19,7 @@ def main(path, rows):
     fields = ['TI_D', 'TI_E', 'TI_F', 'TI_S']
     field = ','.join(fields)
     name = "titles"
-    solrBase = "http://136.199.85.71:8000/solr/"
+    solrBase = "http://136.199.85.71:8001/solr/"
     solrInstance = "pubpsych-core"
     #params = ['indent=on', 'wt=json', 'fl=ID,'+field, 'q=*:*', 'rows=1037540']
     params = ['indent=on', 'wt=json', 'fl=ID,'+field, 'q=*:*', 'rows='+rows]

@@ -24,7 +24,7 @@ def main(path, rows, absType):
     field = ','.join(fields)
 
     name = "abstracts"
-    solrBase = "http://136.199.85.71:8000/solr/"
+    solrBase = "http://136.199.85.71:8001/solr/"
     solrInstance = "pubpsych-core"
     params = ['indent=on', 'wt=json', 'fl=ID,'+field, 'q=*:*', 'rows='+rows]
     solrParams = '&'.join(params)

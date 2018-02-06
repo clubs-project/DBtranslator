@@ -29,7 +29,7 @@ You must specify the field to be translated (tit vs. abs), and, in the second ca
 
 The script automatically downloads all the titles or abstracts into one folder per sub-DB within PubPshyc, and each folder contains one file per language with all the titles/abstracts. These files are 
 1.  pre-processed (cleaning+tokenisation+truecasing), 
-2.  tagged to match the training models (target language and procedence), 
+2.  BPEd and tagged to match the training models (target language and procedence), 
 3.  translated with Marian, 
 4.  post-processed (detokenisation+detruecasing), and 
 5.  converted into a format ready for importing the translations into the index:

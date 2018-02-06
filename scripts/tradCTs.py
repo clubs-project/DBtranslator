@@ -27,6 +27,13 @@ def rreplace(s, old, new, occurrence):
     li = s.rsplit(old, occurrence)
     return new.join(li)
 
+def percentage2d(part, whole):
+    if (part != 0):
+       value = 100*float(part)/float(whole)
+       return "{0:.1f}".format(value)
+    else:
+       return "0"
+
 def remove_diacritic(input):
     '''
     Accept a unicode string, and return a normal string (bytes in Python 3)
@@ -125,11 +132,11 @@ def translate(string, ctDict, lang, complete, plurals, original):
     elif string.capitalize() in ctDict:
        toTrad = string.capitalize()
  
+    if (complete and lang==l1):
+        numTerms += 1
+        words = string.split(" ")
+        numWords = numWords + len(words)
     if toTrad in ctDict:
-       if (complete and lang==l1):
-           numTerms += 1
-           words = string.split(" ")
-           numWords = numWords + len(words)
        trads = ctDict[toTrad].split("|||")
        #(trads)
        for trad in trads:
@@ -147,7 +154,7 @@ def translate(string, ctDict, lang, complete, plurals, original):
        words = string.split(" ")
        complete = False
        if len(words)==1 and plurals==True:
-          #if (original!=''):print(original)
+          #if (original!='' and lang==l1): print(original) #debug
           if (original!='' and lang==l1): numWordsUntrad += 1
           return stringTrad + original
        if len(words)==1 and plurals==False:
@@ -168,6 +175,7 @@ def main(inF, outF):
 
     language = os.path.splitext(inF)[1].replace(".","")
     ctFile = ctPath + "quadLexicon."+language+"key.txt"
+    #ctFile = ctPath + "meshSplit2."+language+"key.txt"
 
     if(language=="en"):
        l1="fr"
@@ -258,7 +266,12 @@ if __name__ == "__main__":
         sys.exit(1)
     main(sys.argv[1], sys.argv[2])
 
+    print(sys.argv[1])
     # CHECK: source==target doesn't mean untranslated
-    print(str(numWordsUntrad) + " untranslated words " + str(numWords)+ " translated words")
-    print(str(numTermsUntrad) + " untranslated main terms, " + str(numTerms) + " translated main terms")
-
+    numTermTrad = numTerms-numTermsUntrad
+    numWordTrad = numWords-numWordsUntrad
+    # LaTeX friendly, human unfriendly
+    print(str(numTermTrad) + " ("+percentage2d(numTermTrad, numTerms)+"\\%) "+" & "+ str(numTermsUntrad) + " ("+percentage2d(numTermsUntrad, numTerms)+"\\%) "+" & "+ str(numWordTrad) + " ("+percentage2d(numWordTrad, numWords)+"\\%) "+" & "+ str(numWordsUntrad) + " ("+percentage2d(numWordsUntrad, numWords)+"\\%) \\\\")
+    #print(str(numTermsUntrad) + " untranslated parts, " + str(numTerms) + " total parts")
+    #print(str(numWordsUntrad) + " untranslated words " + str(numWords)+ " total words")
+ 
