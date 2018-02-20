@@ -8,7 +8,7 @@ def splitter(language, text):
     '''
 
     # Note: These are note exactly moses files: lowercase letters have to be removed
-    filePrefixes = './nonbreaking_prefixes/nonbreaking_prefix.' + language
+    filePrefixes = './thirdparties/nonbreaking_prefixes/nonbreaking_prefix.' + language
 
     prefixes = ''
     prefixList = []

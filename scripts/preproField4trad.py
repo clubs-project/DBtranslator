@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 """ Extract the title/controlled terms and prepares the files to be translated
-    with a format to be used for translation with Marian.
     Any field with a single item (no multiple sentences) can be added to this 
     script via a new fieldType, fields and name.
     Date: 22.12.2017
@@ -17,11 +16,23 @@ import sys
 
 def main(path, rows, fieldType):
 
-    fields = ['CTDL', 'CTEL', 'CTFL', 'CTSL']
+    fields = []
     name = "cts"
+    if fieldType == 'CTH':
+       fields = ['CTDH', 'CTEH', 'CTFH', 'CTSH']
+       name = "cth"
+    elif fieldType == 'CTL':
+       fields = ['CTDL', 'CTEL', 'CTFL', 'CTSL']
+       name = "ctl"
+    elif fieldType == 'ITH':
+       fields = ['ITDH', 'ITEH', 'ITFH', 'ITSH']
+       name = "ith"
+    elif fieldType == 'ITL':
+       fields = ['ITDL', 'ITEL', 'ITFL', 'ITSL']
+       name = "itl"
     field = ','.join(fields)
 
-    solrBase = "http://136.199.85.71:8000/solr/"
+    solrBase = "http://136.199.85.71:8001/solr/"
     solrInstance = "pubpsych-core"
     #params = ['indent=on', 'wt=json', 'fl=ID,'+field, 'q=*:*', 'rows=1037540']
     params = ['indent=on', 'wt=json', 'fl=ID,'+field, 'q=*:*', 'rows='+rows]
@@ -29,6 +40,7 @@ def main(path, rows, fieldType):
     solrURL = solrBase+solrInstance+"/select?"+solrParams
 
     # Read the full DB
+    print("WARNING: New downloads will be appended to previous files")
     print("Querying at " + solrURL)
     response = urllib.request.urlopen(solrURL)
     data = json.loads(response.read().decode('utf-8'))
@@ -36,7 +48,6 @@ def main(path, rows, fieldType):
 
     # Go through each doc
     print("Writing response")
-    print("WARNING: New downloads will be appended to previous files")
     for i,d in enumerate(data['response']['docs']):
         # Create a directory for the document family in case it is not there
         # a family correspond to a DB more or less
@@ -81,7 +92,7 @@ def main(path, rows, fieldType):
 if __name__ == "__main__":
     
     if len(sys.argv) is not 4:
-        sys.stderr.write('Usage: python3 %s outputFolder DBsize tit|ct \n' % sys.argv[0])
+        sys.stderr.write('Usage: python3 %s outputFolder DBsize Field \n' % sys.argv[0])
         sys.exit(1)
     main(sys.argv[1], sys.argv[2], sys.argv[3])
 

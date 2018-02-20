@@ -1,6 +1,6 @@
 # DBtranslator
 
-Scripts to download the information from the DB and translate it using pre-trained models
+Scripts to download the information from the DB and translate it using our pre-trained models
 
 ## Title & Abstract Translation
 The script ```tradTitlesAbstracts.sh``` runs the full pipeline for the translation of titles or abstracts. Before running it for the first time, you need to install the Marian decoder and download the pre-trained models as explained at the end of the section.
@@ -30,7 +30,7 @@ You must specify the field to be translated (tit vs. abs), and, in the second ca
 The script automatically downloads all the titles or abstracts into one folder per sub-DB within PubPshyc, and each folder contains one file per language with all the titles/abstracts. These files are 
 1.  pre-processed (cleaning+tokenisation+truecasing), 
 2.  BPEd and tagged to match the training models (target language and procedence), 
-3.  translated with Marian, 
+3.  translated with Marian (amun), 
 4.  post-processed (detokenisation+detruecasing), and 
 5.  converted into a format ready for importing the translations into the index:
     ID\sFIELD\t<2LANG>\tTEXT
@@ -57,8 +57,12 @@ In a Linux machine
 
 ```cd marian
    mkdir build && cd build
-   cmake .. -DCUDA=off
+   cmake .. 
    make -j 
+```
+
+In case you only want the CPU version, compile with the following flag instead:
+```cmake .. -DCUDA=off
 ```
 
 If you need the bindings
@@ -68,6 +72,23 @@ If you need the bindings
 For other OS or necessities refer to the Marian web page:
 ```https://github.com/marian-nmt/marian```
 
+
 ## Controlled Terms Translation
+The script ```tradCTs.sh``` runs the full pipeline for the translation of controlled terms and related fields. 
 
+### Translation pipeline
+Run the following command to execute the translation pipeline for any of the four available fields:
+```
+user@machine:~/home/DBtranslator/scripts/$  bash tradCTs.sh -h
+tradCTs.sh -f CTH|CTL|ITH|ITL [-h] 
 
+where:
+    -h  show this help text
+    -f  field to translate [CTH|CTL|ITH|ITL]
+```
+```
+Example:
+    bash tradCTs.sh -f CTH
+```
+
+If you want to consider a new field, add it to `preproField4trad.py`
