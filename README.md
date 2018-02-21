@@ -48,6 +48,39 @@ If you want to use the script only on a subset of the database, please, modify t
 
 ### Pre-trained Models
 
+Pre-trained models can be found in the project's Seafile ```CLIR-PubPsych/Code/MT/DBtranslator/models```. Download them and place the full folder in the root of this project. Make sure that the folder contains at least the following files: 
+
+```
+.
+├── general.tc50shuf.w.bpe.L1.json
+├── general.tc50shuf.w.bpe.L2.json
+├── L1L2.allw.bpe
+├── model_L1L2w3_v80k.iter1540000_baseline.npz
+├── model_L1L2w3_v80k.iter1540000.npz.json
+├── model_L1L2w3_v80k.iter1560000_adaptepoch1.npz
+├── model_L1L2w3_v80k.iter1580000_adaptepoch2.npz
+├── model_L1L2w3_v80k.iter1600000_adaptepoch3.npz
+├── model_L1L2w3_v80k.iter1620000_adaptepoch4.npz
+├── model_L1L2w3_v80k.iter1640000_adaptepoch5.npz
+├── modelTC.EpWP.de
+├── modelTC.EpWP.en
+├── modelTC.EpWP.es
+├── modelTC.EpWP.fr
+└── CT
+    ├── meshSplit2.dekey.txt
+    ├── meshSplit2.enkey.txt
+    ├── meshSplit2.eskey.txt
+    ├── meshSplit2.frkey.txt
+    ├── quadLexicon.dekey.txt
+    ├── quadLexicon.enkey.txt
+    ├── quadLexicon.eskey.txt
+    ├── quadLexicon.frkey.txt
+    └── README
+```
+
+
+
+
 ### Marian Installation
 In a Linux machine
 ```
@@ -55,14 +88,16 @@ In a Linux machine
    git clone https://github.com/marian-nmt/marian.git
 ```
 
-```cd marian
+```
+   cd marian
    mkdir build && cd build
    cmake .. 
    make -j 
 ```
 
 In case you only want the CPU version, compile with the following flag instead:
-```cmake .. -DCUDA=off
+```
+   cmake .. -DCUDA=off
 ```
 
 If you need the bindings
@@ -91,4 +126,5 @@ Example:
     bash tradCTs.sh -f CTH
 ```
 
-If you want to consider a new field, add it to `preproField4trad.py`
+If you want to consider a new field, add it to `preproField4trad.py`. As in the case of title/abstract translation, if you want to use the script only on a subset of the database, please, modify the Solr query accordingly in the same file.
+
