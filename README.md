@@ -5,6 +5,32 @@ Scripts to download the information from the DB and translate it using our pre-t
 ## Title & Abstract Translation
 The script ```tradTitlesAbstracts.sh``` runs the full pipeline for the translation of titles or abstracts. Before running it for the first time, you need to install the Marian decoder and download the pre-trained models as explained at the end of the section.
 
+### Marian Installation
+In a Linux machine
+```
+   sudo apt-get install libboost-all-dev
+   git clone https://github.com/marian-nmt/marian.git
+```
+
+```
+   cd marian
+   mkdir build && cd build
+   cmake .. 
+   make -j 
+```
+
+In case you only want the CPU version, compile with the following flag instead:
+```
+   cmake .. -DCUDA=off
+```
+
+If you need the bindings
+```
+   make python
+```
+For other OS or necessities refer to the Marian web page:
+```https://github.com/marian-nmt/marian```
+
 ### Translation pipeline
 Run the following command to execute the translation pipeline for titles or abstracts:
 ```
@@ -46,7 +72,28 @@ PMID_9819920 TI_E        <2fr>        Stratégies de coping pour les personnes s
 
 If you want to use the script only on a subset of the database, please, modify the query accordingly in `preproTits4trad.py` and/or `preproAbst4trad.py`.
 
-### Pre-trained Models
+
+## Controlled Terms Translation
+The script ```tradCTs.sh``` runs the full pipeline for the translation of controlled terms and related fields. The system uses the quadlexicons available in the models folder (see Section Pre-trained Models below).
+
+### Translation pipeline
+Run the following command to execute the translation pipeline for any of the four available fields:
+```
+user@machine:~/home/DBtranslator/scripts/$  bash tradCTs.sh -h
+tradCTs.sh -f CTH|CTL|ITH|ITL [-h] 
+
+where:
+    -h  show this help text
+    -f  field to translate [CTH|CTL|ITH|ITL]
+```
+```
+Example:
+    bash tradCTs.sh -f CTH
+```
+
+If you want to consider a new field, add it to `preproField4trad.py`. As in the case of title/abstract translation, if you want to use the script only on a subset of the database, please, modify the Solr query accordingly in the same file.
+
+## Pre-trained Models
 
 Pre-trained models can be found in the project's Seafile ```CLIR-PubPsych/Code/MT/DBtranslator/models```. Download them and place the full folder in the root of this project. Make sure that the folder contains at least the following files: 
 
@@ -77,54 +124,4 @@ Pre-trained models can be found in the project's Seafile ```CLIR-PubPsych/Code/M
     ├── quadLexicon.frkey.txt
     └── README
 ```
-
-
-
-
-### Marian Installation
-In a Linux machine
-```
-   sudo apt-get install libboost-all-dev
-   git clone https://github.com/marian-nmt/marian.git
-```
-
-```
-   cd marian
-   mkdir build && cd build
-   cmake .. 
-   make -j 
-```
-
-In case you only want the CPU version, compile with the following flag instead:
-```
-   cmake .. -DCUDA=off
-```
-
-If you need the bindings
-```
-   make python
-```
-For other OS or necessities refer to the Marian web page:
-```https://github.com/marian-nmt/marian```
-
-
-## Controlled Terms Translation
-The script ```tradCTs.sh``` runs the full pipeline for the translation of controlled terms and related fields. 
-
-### Translation pipeline
-Run the following command to execute the translation pipeline for any of the four available fields:
-```
-user@machine:~/home/DBtranslator/scripts/$  bash tradCTs.sh -h
-tradCTs.sh -f CTH|CTL|ITH|ITL [-h] 
-
-where:
-    -h  show this help text
-    -f  field to translate [CTH|CTL|ITH|ITL]
-```
-```
-Example:
-    bash tradCTs.sh -f CTH
-```
-
-If you want to consider a new field, add it to `preproField4trad.py`. As in the case of title/abstract translation, if you want to use the script only on a subset of the database, please, modify the Solr query accordingly in the same file.
 
