@@ -55,11 +55,7 @@ def main(inFile):
     solrBase = "http://136.199.85.71:8001/solr/"
     solrInstance = "pubpsych-core"
     #    for downloading
-<<<<<<< HEAD
     paramsDownload = ['indent=on', 'wt=json', 'rows='+str(batch) ,'q=ID:(']
-=======
-    paramsDownload = ['indent=on', 'wt=json', 'q=']
->>>>>>> 78647931d424b6a1efdc749ea7c85d164092e137
     solrParamsDownload = '&'.join(paramsDownload)
     solrURLDownload = solrBase+solrInstance+"/select?"+solrParamsDownload
     #    for uploading
@@ -68,10 +64,7 @@ def main(inFile):
     solrURLUpload = solrBase+solrInstance+"/update?"+solrParamsUpload
 
     # Read data
-<<<<<<< HEAD
     print(inFile)
-=======
->>>>>>> 78647931d424b6a1efdc749ea7c85d164092e137
     print("Start time: "+str(datetime.datetime.now()))
     print("Reading data")
     print("")
@@ -90,12 +83,8 @@ def main(inFile):
            # input example (CT)
            # DFK_0018980 CTEL	<2fr>	['Comportement d'adaptation', 'Emotional']
            id, field = fields[0].split(' ')
-<<<<<<< HEAD
            #articles = articles + 'ID=' + id + '&'
            articles = articles + id + '%20or%20'
-=======
-           articles = articles + 'ID=' + id + '&'
->>>>>>> 78647931d424b6a1efdc749ea7c85d164092e137
            tradfield = lantag2field(fields[1], field)
            text = fields[2]
            # the key includes the both id and the field
@@ -103,11 +92,7 @@ def main(inFile):
            doc[id+separator+tradfield]=text 
            if (i % batch == 0):
                # Let's download the batch of articles
-<<<<<<< HEAD
                solrURLDownloadBatch = solrURLDownload + articles + '0)'
-=======
-               solrURLDownloadBatch = solrURLDownload + articles
->>>>>>> 78647931d424b6a1efdc749ea7c85d164092e137
                print("Downloading batch " + solrURLDownload)
                response = urllib.request.urlopen(solrURLDownloadBatch)
                data = json.loads(response.read().decode('utf-8'))
@@ -135,11 +120,7 @@ def main(inFile):
            i = i+1
        # We are done with the file, let's commit the last batch
        if len(articles)!=0:
-<<<<<<< HEAD
           solrURLDownloadBatch = solrURLDownload + articles + '0)'
-=======
-          solrURLDownloadBatch = solrURLDownload + articles
->>>>>>> 78647931d424b6a1efdc749ea7c85d164092e137
           print("Last unfinished batch " + solrURLDownload)
           response = urllib.request.urlopen(solrURLDownloadBatch)
           data = json.loads(response.read().decode('utf-8'))
