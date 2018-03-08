@@ -19,22 +19,37 @@ separator = ':::'
 
 
 ''' Generates the name of the field from the original field and the language of
-    the translation (structure for titles)
+    the translation (structure for titles) ##TI_E
 '''
-def lantag2field(lantag, field):
+def lantag2fieldTit(lantag, field):
     lan = lantag[2:-1]
     if(lan=="en"):
-       fieldLabel = field[:3]+'E'+field[4:]+'_from_'+field[3:4]
+       fieldLabel = field[:3]+'E_from_'+field[3:4]
     elif(lan=="es"):
-       fieldLabel = field[:3]+'S'+field[4:]+'_from_'+field[3:4]
+       fieldLabel = field[:3]+'S_from_'+field[3:4]
     elif(lan=="de"):
-       fieldLabel = field[:3]+'D'+field[4:]+'_from_'+field[3:4]
+       fieldLabel = field[:3]+'D_from_'+field[3:4]
     elif(lan=="fr"):
-       fieldLabel = field[:3]+'F'+field[4:]+'_from_'+field[3:4]
+       fieldLabel = field[:3]+'F_from_'+field[3:4]
     return fieldLabel
 
 ''' Generates the name of the field from the original field and the language of
-    the translation (structure for CTS)
+    the translation (structure for abstracts) ##ABHR_E
+'''
+def lantag2fieldAbs(lantag, field):
+    lan = lantag[2:-1]
+    if(lan=="en"):
+       fieldLabel = field[:4]+'_E_from_'+field[5:6]
+    elif(lan=="es"):
+       fieldLabel = field[:4]+'_S_from_'+field[5:6]
+    elif(lan=="de"):
+       fieldLabel = field[:4]+'_D_from_'+field[5:6]
+    elif(lan=="fr"):
+       fieldLabel = field[:4]+'_F_from_'+field[5:6]
+    return fieldLabel
+
+''' Generates the name of the field from the original field and the language of
+    the translation (structure for CTS)  ##CTEH
 '''
 def lantag2fieldCT(lantag, field):
     lan = lantag[2:-1]
@@ -73,7 +88,8 @@ def main(inFile):
        field = ''      # name of the field to be updated/added
        text = ''       # translation to be uploaded into field
        articles = ''   # IDs to be updated within a batch
-       doc = {}        # dictionary with the ID of the document, field and translations to be updated within a batch
+       doc = {}        # dictionary with the ID of the document, field and 
+                       # translations to be updated within a batch
        i = batch-1
        for line in f:
            line = line.strip()
@@ -85,7 +101,7 @@ def main(inFile):
            id, field = fields[0].split(' ')
            #articles = articles + 'ID=' + id + '&'
            articles = articles + id + '%20or%20'
-           tradfield = lantag2field(fields[1], field)
+           tradfield = lantag2fieldAbs(fields[1], field)
            text = fields[2]
            # the key includes the both id and the field
            #doc[id+separator+tradfield]=urllib.parse.quote(text) 
@@ -138,6 +154,7 @@ def main(inFile):
           response = urllib.request.urlopen(req)
     print("\nDONE!")
     print("End time: "+str(datetime.datetime.now()))
+
 
 
 if __name__ == "__main__":
