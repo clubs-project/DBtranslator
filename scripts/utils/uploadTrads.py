@@ -65,7 +65,7 @@ def lantag2fieldCT(lantag, field):
 
 
 
-def main(inFile):
+def main(inFile, content):
     # Solr details
     solrBase = "http://136.199.85.71:8001/solr/"
     solrInstance = "pubpsych-core"
@@ -101,7 +101,14 @@ def main(inFile):
            id, field = fields[0].split(' ')
            #articles = articles + 'ID=' + id + '&'
            articles = articles + id + '%20or%20'
-           tradfield = lantag2fieldAbs(fields[1], field)
+           if content=='ct': 
+              tradfield = lantag2fieldCT(fields[1], field)
+           elif content=='tit': 
+              tradfield = lantag2fieldTit(fields[1], field)
+           elif content=='abs': 
+              tradfield = lantag2fieldAbs(fields[1], field)
+           else:
+              print("ERROR: Please, especify a correct type of field to upload abs|tit|ct\n")
            text = fields[2]
            # the key includes the both id and the field
            #doc[id+separator+tradfield]=urllib.parse.quote(text) 
@@ -121,6 +128,10 @@ def main(inFile):
                        # add the information in the solr batch-dump of the new field
                        if (idDoc == idDownloaded):
                            d[field] = doc[idDownloaded+separator+field]
+                           # this if is only triggered for CTs where a list in string format must
+                           # be converted to a true list
+                           if content=='ct' and d[field].startswith("['") and d[field].endswith("']"):
+                              d[field] = d[field][2:-2].split("', '")
                            break
                # Let's upload the updated articles
                print("Updating batch " + solrURLUpload)
@@ -146,6 +157,10 @@ def main(inFile):
                   idDownloaded = str(d['ID'])
                   if (idDoc == idDownloaded):
                       d[field] = doc[idDownloaded+separator+field]
+                      # this if is only triggered for CTs where a list in string format must be
+                      # converted to a true list
+                      if content=='ct' and d[field].startswith("['") and d[field].endswith("']"):
+                         d[field] = d[field][2:-2].split("', '")
                       break
           dataSub = {"add":data['response']['docs']}
           toSubmit = json.dumps(dataSub)
@@ -159,9 +174,9 @@ def main(inFile):
 
 if __name__ == "__main__":
     
-    if len(sys.argv) is not 2:
-        sys.stderr.write('Usage: python3 %s file \n' % sys.argv[0])
+    if len(sys.argv) is not 3:
+        sys.stderr.write('Usage: python3 %s file [abs|tit|ct]\n' % sys.argv[0])
         sys.exit(1)
-    main(sys.argv[1])
+    main(sys.argv[1], sys.argv[2])
 
 
