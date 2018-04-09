@@ -11,11 +11,11 @@
 outPath="../"
 models="../models"
 bins="./thirdparties"
-sizeDB=30000
-#sizeDB=1037540
+#sizeDB=1000
+sizeDB=1037540
 
 # Override by command line arguments:
-ctType='CTL'
+ctType='ITL'
 
 # Command line arguments
 usage="$(basename "$0") -f CTH|CTL|ITH|ITL [-h] 
@@ -42,6 +42,7 @@ while getopts ':hf:' option; do
   esac
 done
 
+echo "WARNING: Issue in github solved?"
 echo "Translation Pipeline"
 # Download the titles from the DB and prepare the format for translation
 # A file per subDB and language is created 
@@ -52,7 +53,7 @@ elif [ $ctType == "CTL" ]; then
 elif [ $ctType == "ITH" ]; then
    outPath=$outPath'ith/'
 elif [ $ctType == "ITL" ]; then
-   outPath=$outPath'itl/'
+   outPath=$outPath'itlM/'
 fi
 mkdir -p $outPath
 python3 preproField4trad.py $outPath $sizeDB $ctType
