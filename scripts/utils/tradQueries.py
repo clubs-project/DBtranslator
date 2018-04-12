@@ -199,8 +199,8 @@ def main(inF, outF):
     global language
     global stringTrad
 
-    #ctFile = ctPath + "quadLexicon.concat.txt"
-    ctFile = ctPath + "meshSplit2.concat.txt"
+    ctFile = ctPath + "quadLexicon.concat.lc.txt"
+    #ctFile = ctPath + "meshSplit2.concat.lc.txt"
     print(ctFile)
 
     # Assumption
@@ -260,10 +260,14 @@ if __name__ == "__main__":
     #print(str(numWordsUntrad) + " untranslated words " + str(numWords)+ " total words")
  
 
+# TRUECASE
 #python3 tradQueries.py queries.nonEmpty.2trad queries.mesh2.trad
-#144528 (6.6\%)  & 2033093 (93.4\%)  & 2253389 (65.0\%)  & 1213009 (35.0\%) \\
+# 144645 (6.6\%)  & 2032976 (93.4\%)  & 2140408 (61.7\%)  & 1325990 (38.3\%) \\
 #python3 tradQueries.py queries.nonEmpty.2trad queries.quadLex.trad
 #291493 (13.4\%)  & 1886128 (86.6\%)  & 2826779 (81.5\%)  & 639619 (18.5\%) \\
-
-
+# LOWERCASE
+# python3 tradQueries.py queries.nonEmpty.2trad queries.mesh2.lc.trad
+# 167152 (7.7\%)  & 2010469 (92.3\%)  & 2225598 (64.2\%)  & 1240800 (35.8\%) \\
+# python3 tradQueries.py queries.nonEmpty.2trad queries.quadLex.lc.trad
+# 324033 (14.9\%)  & 1853588 (85.1\%)  & 2945959 (85.0\%)  & 520439 (15.0\%) \\
 
