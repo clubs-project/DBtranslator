@@ -2,6 +2,15 @@ import unicodedata
 import re
 import argparse
 
+'''Cleans and merges dictionaries as described in the section "Cleaning and Quad-lexicon Compilation" of year2/CLUBS_MTcts.pdf"
+Example usage:
+1. Run 'python3 preprocess_dicts.py  <file containing stopwords in all languages> <dictionaries in priority order> ' 
+
+To establish the whole non-MeSH lexicon, you can use:
+'python3 preprocess_dicts.py DeEnEsFr.sw wp.enkey2.txt wp.dekey2.txt wp.frkey2.txt wp.eskey2.txt WP.cat.en WP.cat.de WP.cat.fr WP.cat.es untradDEall.keys.en untradDEall.keys.de untradDEall.keys.fr untradDEall.keys.es dict.keys.en dict.keys.de dict.keys.fr dict.keys.es'
+(adapt paths to your own system).
+'''
+
 
 def rreplace(s, old, new, num_occ):
     '''Replaces the last num_occ occurrences of old by new , taken from 
@@ -135,50 +144,45 @@ def read_in_sw_file(sw_file):
     return stopwords
 
 
-def main(l1, l2, l3, l4, sw_file, command, la_code):
-    """ l1 > l2 > l3 > l4 in terms of priority"""
+def main(dicts, sw_file, command, la_code):
+    """ dicts[0] > dicts[1] > ... in terms of priority"""
     stopwords = read_in_sw_file(sw_file)
-    print("Reading in L1...")
-    l1_dict = read_in(l1, stopwords)
-    print("Reading in L2...")
-    l2_dict = read_in(l2, stopwords)
-    print("Reading in L3...")
-    l3_dict = read_in(l3, stopwords)
-    print("Reading in L4...")
-    l4_dict = read_in(l4, stopwords)
-    print("Merging L1 dict with L2 dict...")
-    main_dict = merge_dicts(l1_dict, l2_dict)
-    print("Merging resulted dict with L3 dict...")
-    main_dict = merge_dicts(main_dict, l3_dict)
-    print("Merging resulted dict with L4 dict...")
-    main_dict = merge_dicts(main_dict, l4_dict)
-    path_prefix = concatenate_string_list(l1.split("/")[:-1], "/", add_at_last_string=True)
+    main_dict = dict()
+    for i in range(len(dicts)):
+        print("Reading in dict", str(i+1), "...")
+        if i == 0:
+            main_dict = read_in(dicts[0], stopwords)
+        else:
+            print("Merging previous dict and dict", str(i+1), "...")
+            main_dict = merge_dicts(main_dict, read_in(dicts[i], stopwords))
+    path_prefix = concatenate_string_list(dicts[0].split("/")[:-1], "/", add_at_last_string=True)
+    path = path_prefix
+    previous_abbr = ""
+    for i in range(len(dicts)):
+        abbr = dicts[i].split("/")[-1].split(".")[0]
+        if abbr == previous_abbr:
+            continue
+        path += abbr + "."
+        previous_abbr = abbr
     if la_code:
-        path = path_prefix + l1.split("/")[-1].split(".")[0] + "." + l2.split("/")[-1].split(".")[0] + "." \
-           + l3.split("/")[-1].split(".")[0] + "." + l4.split("/")[-1].split(".")[0] + ".merged." + la_code
+        path += "merged." + la_code
     else:
-        path_middle = l1.split("/")[-1]
-        path = path_prefix + path_middle.split(".")[0] + ".concatenated.txt"
+        path += "concatenated.txt"
     print("Path:", path)
     print("Writing new dict to file...")
     write_to_file(main_dict, path, command)
 
 if __name__=="__main__":
-    argparser = argparse.ArgumentParser(description="Preprocess and merge four different dictionaries")
-    argparser.add_argument("d1_file", type=str, help="Path to dict [in language] with highest priority (mandatory)")
-    argparser.add_argument("d2_file", type=str, help="Path to dict [in language] with 2nd highest priority (mandatory)")
-    argparser.add_argument("d3_file", type=str, help="Path to dict [in language] with 3rd highest priority (mandatory)")
-    argparser.add_argument("d4_file", type=str, help="Path to dict [in language] with least priority (mandatory)")
+    argparser = argparse.ArgumentParser(description="Cleans and merges different dictionaries, sticking to a given order")
     argparser.add_argument("sw_file", type=str, help="path to file containing stopwords in all languages (mandatory)")
-
+    argparser.add_argument("dicts", type=str, nargs='+', help="Paths to dictionaries, priority will be the order in the command ")
 
     argparser.add_argument("-lc", "--language-code", dest="la_code", default = "",
-                           help="If you want to merge four dictionaries of the same language, give the language code, "
+                           help="If you want to merge dictionaries of the same language, give the language code, "
                                 "since otherwise the files will be named just like a merged version of the first dict in"
-                                "four different languages (which might replace existing dictionaries of that kind).")
+                                "different languages (which might replace existing dictionaries of that kind).")
     args = argparser.parse_args()
 
-    main(args.d1_file, args.d2_file, args.d3_file, args.d4_file, args.sw_file, [args.d1_file, args.d2_file,
-                                                                                args.d3_file, args.d4_file,
-                                                                                args.sw_file, args.la_code],
-         args.la_code)
+    command = ["preprocess_dicts.py", args.sw_file] + args.dicts + [args.la_code]
+
+    main(args.dicts, args.sw_file, command, args.la_code)
