@@ -2,9 +2,9 @@ import unicodedata
 import re
 import argparse
 
-'''Cleans and merges dictionaries as described in the section "Cleaning and Quad-lexicon Compilation" of year2/CLUBS_MTcts.pdf"
-Example usage:
-1. Run 'python3 preprocess_dicts.py  <file containing stopwords in all languages> <dictionaries in priority order> ' 
+'''Cleans and merges dictionaries as described in the section 'Cleaning and Quad-lexicon Compilation" of year2/CLUBS_MTcts.pdf'
+Usage:
+'python3 preprocess_dicts.py  <file containing stopwords in all languages> <dictionaries in priority order> ' 
 
 To establish the whole non-MeSH lexicon, you can use:
 'python3 preprocess_dicts.py DeEnEsFr.sw wp.enkey2.txt wp.dekey2.txt wp.frkey2.txt wp.eskey2.txt WP.cat.en WP.cat.de WP.cat.fr WP.cat.es untradDEall.keys.en untradDEall.keys.de untradDEall.keys.fr untradDEall.keys.es dict.keys.en dict.keys.de dict.keys.fr dict.keys.es'
@@ -20,6 +20,15 @@ def rreplace(s, old, new, num_occ):
 
 
 def read_in(input_path, stopwords):
+    '''Reads in a dictionary and cleans it:
+    - lowercases the token
+    - removes diacritics ('ü' -> 'u')
+    - replaces 'ß' with 'ss' 
+    - introduces duplicate versions of words containing umlauts ('ü' -> 'ue') and BE/AE spelling (e.g. -ise -> -ize)
+    - removes entries containing stopwords
+    - removes entries containing empty translations or empty source words
+    - deletes [dokumenttyp] annotation
+    '''
     la_dict = dict()
     with open(input_path, "r") as f:
         umlaut_pattern = re.compile('[ÜǘÄäÖö]+')
@@ -28,13 +37,14 @@ def read_in(input_path, stopwords):
             # result of unicodedata.normalize(...) applied to "führung", fuehrung has to be added manually
             duplicate_needed = False
             entries = line.split("|||")
+
             # lowercase
             source_word = entries[0].lower()
+            # stopwords are lowercased, but contain diacritics, thus we have to check this here before removing diacritics
             if source_word == "" or source_word in stopwords:
                 # remove whole entry if source is empty or if source word is a stopword
-                # debugging/ checking
-                #print("Entry removed because of source word:", source_word)
                 continue
+
             # ß has to be replaced manually, since unicodedata.normalize simply deletes it instead of replacing it with ss
             source_word = source_word.replace('ß', 'ss')
 
@@ -66,12 +76,11 @@ def read_in(input_path, stopwords):
             # remove diacritics
             source_word = unicodedata.normalize('NFKD', source_word).encode('ASCII', 'ignore').decode()
 
+            # delete unnecessary annotation
             source_word = source_word.replace('[dokumenttyp]', '').strip()
             la_dict[source_word] = dict()
 
             if duplicate_needed:
-                if source_word_duplicate is None:
-                    print("There is a bug in the source word duplicate generation!")
                 source_word_duplicate = unicodedata.normalize('NFKD', source_word_duplicate).encode('ASCII', 'ignore').decode()
                 source_word_duplicate = source_word_duplicate.replace('[dokumenttyp]', '').strip()
                 la_dict[source_word_duplicate] = dict()
@@ -86,8 +95,6 @@ def read_in(input_path, stopwords):
                     # remove whole entry if translation into one language is empty or
                     # translation is a stopword in any language (it doesn't have to be a stopword in its own language)
                     delete_entry = True
-                    # debugging/ checking
-                    #print("Entry removed because of translation:", translation)
                     break
                 translation = translation.replace('ß', 'ss')
                 translation = unicodedata.normalize('NFKD', translation).encode('ASCII', 'ignore').decode()
@@ -104,14 +111,17 @@ def read_in(input_path, stopwords):
 
 
 def merge_dicts(dict_with_higher_priority, other_dict):
+    '''Merge two dicts, prioritizing the first one over the second one'''
     for key in other_dict.keys():
-        # if a key of other_dict also is a key in dict_with_higher_priority, we eliminate the key of the other_dict
+        # if a key of other_dict also is a key in dict_with_higher_priority, we keep the value from dict_with_higher_priority
+        # and do not add the value from other_dict
         if key not in dict_with_higher_priority.keys():
             dict_with_higher_priority[key] = other_dict[key]
     return dict_with_higher_priority
 
 
 def concatenate_string_list(string_list, string_between_strings=" ", add_at_last_string=False):
+    '''Concatenates a list of strings into a single string with string_between_strings added between the former elements of the list'''
     result = ""
     for i in range(len(string_list)):
         if i == len(string_list)-1 and not add_at_last_string:
@@ -122,6 +132,7 @@ def concatenate_string_list(string_list, string_between_strings=" ", add_at_last
 
 
 def write_to_file(la_dict, path, command):
+    '''Writes a dictionary to a file, separating translations with |||'''
     with open(path, "w") as out:
         out.write("<<<This dictionary has been compiled with the following command: " + concatenate_string_list(command)
                   + ">>>\n")
@@ -135,7 +146,7 @@ def write_to_file(la_dict, path, command):
 
 def read_in_sw_file(sw_file):
     '''Returns a set of all stopwords.
-    Input file: one stopword per line, the stopwords are lower-cased, but no diacritics have been removed'''
+    Input file: one stopword per line, the stopwords are lowercased, but no diacritics have been removed'''
     stopwords = set()
     with open(sw_file, "r") as f:
         for line in f:
@@ -174,7 +185,8 @@ def main(dicts, sw_file, command, la_code):
 
 if __name__=="__main__":
     argparser = argparse.ArgumentParser(description="Cleans and merges different dictionaries, sticking to a given order")
-    argparser.add_argument("sw_file", type=str, help="path to file containing stopwords in all languages (mandatory)")
+    argparser.add_argument("sw_file", type=str, help="Path to file containing stopwords in all languages (mandatory)")
+    # nargs='+': we get at least 1 argument, but there can be finitely many more
     argparser.add_argument("dicts", type=str, nargs='+', help="Paths to dictionaries, priority will be the order in the command ")
 
     argparser.add_argument("-lc", "--language-code", dest="la_code", default = "",
