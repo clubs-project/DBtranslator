@@ -89,7 +89,7 @@ def read_in(input_path, stopwords):
             la_dict[source_word] = dict()
 
             if duplicate_needed:
-                source_word_duplicate = unicodedata.normalize('NFKD', source_word_duplicate).encode('utf-8', 'ignore').decode()
+                source_word_duplicate = unicodedata.normalize('NFKD', source_word_duplicate).encode('ASCII', 'ignore').decode()
                 source_word_duplicate = source_word_duplicate.replace('[dokumenttyp]', '').strip()
                 la_dict[source_word_duplicate] = dict()
 
