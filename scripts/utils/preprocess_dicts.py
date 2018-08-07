@@ -203,13 +203,15 @@ if __name__=="__main__":
     # nargs='+': we get at least 1 argument, but there can be finitely many more
     argparser.add_argument("dicts", type=str, nargs='+', help="Paths to dictionaries, priority will be the order in the command ")
 
-    argparser.add_argument("-lc", "--language-code", dest="la_code", default = "",
+    argparser.add_argument("-lc", "--language-code", dest="la_code", default="",
                            help="If you want to merge dictionaries of the same language, give the language code, "
                                 "since otherwise the files will be named just like a merged version of the first dict in"
                                 "different languages (which might replace existing dictionaries of that kind).")
     args = argparser.parse_args()
 
-    command = ["preprocess_dicts.py", args.sw_file] + args.dicts + [args.la_code]
+    command = ["preprocess_dicts.py", args.sw_file] + args.dicts
+    if args.la_code:
+        command += ["-lc " + args.la_code]
 
     main(args.dicts, args.sw_file, command, args.la_code)
 
