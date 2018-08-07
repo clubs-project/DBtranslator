@@ -7,7 +7,9 @@ Usage:
 'python3 preprocess_dicts.py  <file containing stopwords in all languages> <dictionaries in priority order> ' 
 
 To establish the whole non-MeSH lexicon, you can use:
-'python3 preprocess_dicts.py DeEnEsFr.sw wp.enkey2.txt wp.dekey2.txt wp.frkey2.txt wp.eskey2.txt WP.cat.en WP.cat.de WP.cat.fr WP.cat.es untradDEall.keys.en untradDEall.keys.de untradDEall.keys.fr untradDEall.keys.es dict.keys.en dict.keys.de dict.keys.fr dict.keys.es'
+'python3 preprocess_dicts.py DeEnEsFr.sw wp.enkey2.txt wp.dekey2.txt wp.frkey2.txt wp.eskey2.txt WP.cat.en WP.cat.de 
+WP.cat.fr WP.cat.es untradDEall.keys.en untradDEall.keys.de untradDEall.keys.fr untradDEall.keys.es dict.keys.en 
+dict.keys.de dict.keys.fr dict.keys.es'
 (adapt paths to your own system).
 '''
 
@@ -40,9 +42,10 @@ def read_in(input_path, stopwords):
 
             # lowercase
             source_word = entries[0].lower()
+
             # stopwords are lowercased, but contain diacritics, thus we have to check this here before removing diacritics
-            if source_word == "" or source_word in stopwords:
-                # remove whole entry if source is empty or if source word is a stopword
+            if source_word in stopwords:
+                # remove whole entry if source word is a stopword
                 continue
 
             # ß has to be replaced manually, since unicodedata.normalize simply deletes it instead of replacing it with ss
@@ -78,10 +81,15 @@ def read_in(input_path, stopwords):
 
             # delete unnecessary annotation
             source_word = source_word.replace('[dokumenttyp]', '').strip()
+
+            # source word might be empty after all these normalization steps -> remove whole entry
+            if source_word == "":
+                continue
+
             la_dict[source_word] = dict()
 
             if duplicate_needed:
-                source_word_duplicate = unicodedata.normalize('NFKD', source_word_duplicate).encode('ASCII', 'ignore').decode()
+                source_word_duplicate = unicodedata.normalize('NFKD', source_word_duplicate).encode('utf-8', 'ignore').decode()
                 source_word_duplicate = source_word_duplicate.replace('[dokumenttyp]', '').strip()
                 la_dict[source_word_duplicate] = dict()
 
@@ -91,14 +99,20 @@ def read_in(input_path, stopwords):
                 la_code = entries[i].split(":")[0]
                 translation = concatenate_string_list(entries[i].split(":")[1:], ":")
                 translation = translation.rstrip().lower()
-                if translation == "" or translation in stopwords:
-                    # remove whole entry if translation into one language is empty or
-                    # translation is a stopword in any language (it doesn't have to be a stopword in its own language)
+                if translation in stopwords:
+                    # remove whole entry if translation is a stopword in any language (it doesn't have to be a stopword
+                    # in its own language)
                     delete_entry = True
                     break
                 translation = translation.replace('ß', 'ss')
-                translation = unicodedata.normalize('NFKD', translation).encode('ASCII', 'ignore').decode()
+                translation = unicodedata.normalize('NFKD', translation).encode(encoding='ASCII', errors='ignore').decode()
                 translation = translation.replace('[dokumenttyp]', '').strip()
+
+                # translation might be empty after all these normalization steps -> remove whole entry
+                if translation == "":
+                    delete_entry = True
+                    break
+
                 la_dict[source_word][la_code] = translation
                 if duplicate_needed:
                     la_dict[source_word_duplicate][la_code] = translation
@@ -198,3 +212,4 @@ if __name__=="__main__":
     command = ["preprocess_dicts.py", args.sw_file] + args.dicts + [args.la_code]
 
     main(args.dicts, args.sw_file, command, args.la_code)
+
