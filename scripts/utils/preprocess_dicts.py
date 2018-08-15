@@ -21,7 +21,7 @@ def rreplace(s, old, new, num_occ):
     return new.join(li)
 
 
-def read_in(input_path, stopwords):
+def read_in(input_path, stopwords, non_solr):
     '''Reads in a dictionary and cleans it:
     - lowercases the token
     - removes diacritics ('ü' -> 'u')
@@ -30,6 +30,7 @@ def read_in(input_path, stopwords):
     - removes entries containing stopwords
     - removes entries containing empty translations or empty source words
     - deletes [dokumenttyp] annotation
+    - if non_solr == False, hyphens will be replaced with whitespaces
     '''
     la_dict = dict()
     with open(input_path, "r") as f:
@@ -51,28 +52,47 @@ def read_in(input_path, stopwords):
             # ß has to be replaced manually, since unicodedata.normalize simply deletes it instead of replacing it with ss
             source_word = source_word.replace('ß', 'ss')
 
+            # Solr replaces hyphens with whitespaces when parsing queries
+            if not non_solr:
+                source_word = source_word.replace('-', ' ')
+
             # check if it is necessary to introduce duplicates like German ü -> ue (unicode normalization returns u)
             # and different spellings in AE and BE
+            # first determine the language of the source word
+            translation_languages = set()
+            sw_language = ""
+            for i in range(1, len(entries)):
+                translation_languages.add(entries[i].split(":")[0])
+            if "en" not in translation_languages:
+                sw_language = "en"
+            elif "de" not in translation_languages:
+                sw_language = "de"
+            elif "fr" not in translation_languages:
+                sw_language = "fr"
+            else:
+                sw_language = "es"
+
+            # introduce duplicates
             source_word_duplicate = None
             if umlaut_pattern.search(source_word):
                 duplicate_needed = True
                 source_word_duplicate = source_word.replace('ü', 'ue').replace('ö', 'oe').replace('ä', 'ae')
-            elif source_word.endswith('ise'):
+            elif sw_language == "en" and source_word.endswith('ise'):
                 duplicate_needed = True
                 source_word_duplicate = rreplace(source_word, 'ise', 'ize', 1)
-            elif source_word.endswith('ize'):
+            elif sw_language == "en" and source_word.endswith('ize'):
                 duplicate_needed = True
                 source_word_duplicate = rreplace(source_word, 'ize', 'ise', 1)
-            elif source_word.endswith('isation'):
+            elif sw_language == "en" and source_word.endswith('isation'):
                 duplicate_needed = True
                 source_word_duplicate = rreplace(source_word, 'isation', 'ization', 1)
-            elif source_word.endswith('ization'):
+            elif sw_language == "en" and source_word.endswith('ization'):
                 duplicate_needed = True
                 source_word_duplicate = rreplace(source_word, 'ization', 'isation', 1)
-            elif source_word.endswith('our'):
+            elif sw_language == "en" and source_word.endswith('our'):
                 duplicate_needed = True
                 source_word_duplicate = rreplace(source_word, 'our', 'or', 1)
-            elif source_word.endswith('or'):
+            elif sw_language == "en" and source_word.endswith('or'):
                 duplicate_needed = True
                 source_word_duplicate = rreplace(source_word, 'or', 'our', 1)
 
@@ -169,17 +189,17 @@ def read_in_sw_file(sw_file):
     return stopwords
 
 
-def main(dicts, sw_file, command, la_code):
+def main(dicts, sw_file, command, la_code, non_solr):
     """ dicts[0] > dicts[1] > ... in terms of priority"""
     stopwords = read_in_sw_file(sw_file)
     main_dict = dict()
     for i in range(len(dicts)):
         print("Reading in dict", str(i+1), "...")
         if i == 0:
-            main_dict = read_in(dicts[0], stopwords)
+            main_dict = read_in(dicts[0], stopwords, non_solr)
         else:
             print("Merging previous dict and dict", str(i+1), "...")
-            main_dict = merge_dicts(main_dict, read_in(dicts[i], stopwords))
+            main_dict = merge_dicts(main_dict, read_in(dicts[i], stopwords, non_solr))
     path_prefix = concatenate_string_list(dicts[0].split("/")[:-1], "/", add_at_last_string=True)
     path = path_prefix
     previous_abbr = ""
@@ -189,6 +209,10 @@ def main(dicts, sw_file, command, la_code):
             continue
         path += abbr + "."
         previous_abbr = abbr
+    if non_solr:
+        path += "non-solr."
+    else:
+        path += "solr."
     if la_code:
         path += "merged." + la_code
     else:
@@ -207,11 +231,17 @@ if __name__=="__main__":
                            help="If you want to merge dictionaries of the same language, give the language code, "
                                 "since otherwise the files will be named just like a merged version of the first dict in"
                                 "different languages (which might replace existing dictionaries of that kind).")
+    argparser.add_argument("-ns", "--non-solr", dest="non_solr", action="store_true", help="If this option is set, Solr-specific preproc"
+                                                                          "essing of the dictionaries (e.g. replacement"
+                                                                          " of hyphens with whitespaces) will not be "
+                                                                          "performed.")
     args = argparser.parse_args()
 
     command = ["preprocess_dicts.py", args.sw_file] + args.dicts
     if args.la_code:
         command += ["-lc " + args.la_code]
+    if args.non_solr:
+        command *= ["--non-solr"]
 
-    main(args.dicts, args.sw_file, command, args.la_code)
+    main(args.dicts, args.sw_file, command, args.la_code, args.non_solr)
 
