@@ -1,6 +1,7 @@
 import unicodedata
 import re
 import argparse
+import string
 
 '''Cleans and merges dictionaries as described in the section 'Cleaning and Quad-lexicon Compilation" of year2/CLUBS_MTcts.pdf'
 Usage:
@@ -21,11 +22,50 @@ def rreplace(s, old, new, num_occ):
     return new.join(li)
 
 
-def read_in(input_path, stopwords, non_solr):
+def read_in_non_solr(input_path):
+    '''Simply reads in a dictionary, no preprocessing at all'''
+    la_dict = dict()
+    with open(input_path, "r") as f:
+        for line in f:
+            entries = line.split("|||")
+            source_word = entries[0]
+
+            # remove whole entry if source_ẃord is empty
+            if source_word == "":
+                continue
+
+            la_dict[source_word] = dict()
+
+            # iterate over translations
+            delete_entry = False
+            for i in range(1, len(entries)):
+                la_code = entries[i].split(":")[0]
+                translation = concatenate_string_list(entries[i].split(":")[1:], ":")
+                translation = translation.rstrip()
+
+                # remove whole entry if translation is empty
+                if translation == "":
+                    delete_entry = True
+                    break
+
+                la_dict[source_word][la_code] = translation
+
+            if delete_entry:
+                la_dict.pop(source_word, None)
+    return la_dict
+
+
+def replace_punctuation(word, regex):
+    # Solr replaces punctuation signs with whitespaces when parsing queries
+    return regex.sub(' ', word)
+
+
+def read_in_solr(input_path, stopwords):
     '''Reads in a dictionary and cleans it:
     - lowercases the token
     - removes diacritics ('ü' -> 'u')
     - replaces 'ß' with 'ss' 
+    - replaces punctuation with whitespace
     - introduces duplicate versions of words containing umlauts ('ü' -> 'ue') and BE/AE spelling (e.g. -ise -> -ize)
     - removes entries containing stopwords
     - removes entries containing empty translations or empty source words
@@ -33,6 +73,7 @@ def read_in(input_path, stopwords, non_solr):
     - if non_solr == False, hyphens will be replaced with whitespaces
     '''
     la_dict = dict()
+    regex = re.compile('[%s]' % re.escape(string.punctuation))
     with open(input_path, "r") as f:
         umlaut_pattern = re.compile('[ÜǘÄäÖö]+')
         for line in f:
@@ -51,10 +92,6 @@ def read_in(input_path, stopwords, non_solr):
 
             # ß has to be replaced manually, since unicodedata.normalize simply deletes it instead of replacing it with ss
             source_word = source_word.replace('ß', 'ss')
-
-            # Solr replaces hyphens with whitespaces when parsing queries
-            if not non_solr:
-                source_word = source_word.replace('-', ' ')
 
             # check if it is necessary to introduce duplicates like German ü -> ue (unicode normalization returns u)
             # and different spellings in AE and BE
@@ -99,19 +136,26 @@ def read_in(input_path, stopwords, non_solr):
             # remove diacritics
             source_word = unicodedata.normalize('NFKD', source_word).encode('ASCII', 'ignore').decode()
 
+            # String.punctuation only knows ASCII punctuation
+            source_word = replace_punctuation(source_word, regex)
+
             # delete unnecessary annotation
             source_word = source_word.replace('[dokumenttyp]', '').strip()
 
             # source word might be empty after all these normalization steps -> remove whole entry
-            if source_word == "":
+            if source_word.strip() == "":
                 continue
 
             la_dict[source_word] = dict()
 
             if duplicate_needed:
                 source_word_duplicate = unicodedata.normalize('NFKD', source_word_duplicate).encode('ASCII', 'ignore').decode()
+                source_word_duplicate = replace_punctuation(source_word_duplicate, regex)
                 source_word_duplicate = source_word_duplicate.replace('[dokumenttyp]', '').strip()
-                la_dict[source_word_duplicate] = dict()
+                if source_word_duplicate.strip() == "":
+                    duplicate_needed = False
+                else:
+                    la_dict[source_word_duplicate] = dict()
 
             # iterate over translations
             delete_entry = False
@@ -125,11 +169,16 @@ def read_in(input_path, stopwords, non_solr):
                     delete_entry = True
                     break
                 translation = translation.replace('ß', 'ss')
+
                 translation = unicodedata.normalize('NFKD', translation).encode(encoding='ASCII', errors='ignore').decode()
+
+                # String.punctuation only knows ASCII punctuation
+                translation = replace_punctuation(translation, regex)
+
                 translation = translation.replace('[dokumenttyp]', '').strip()
 
                 # translation might be empty after all these normalization steps -> remove whole entry
-                if translation == "":
+                if translation.strip() == "":
                     delete_entry = True
                     break
 
@@ -196,10 +245,18 @@ def main(dicts, sw_file, command, la_code, non_solr):
     for i in range(len(dicts)):
         print("Reading in dict", str(i+1), "...")
         if i == 0:
-            main_dict = read_in(dicts[0], stopwords, non_solr)
+
+            # we can make two different versions of the dicts: a preprocessed one and a non-preprocessed one
+            if non_solr:
+                main_dict = read_in_non_solr(dicts[0])
+            else:
+                main_dict = read_in_solr(dicts[0], stopwords)
         else:
             print("Merging previous dict and dict", str(i+1), "...")
-            main_dict = merge_dicts(main_dict, read_in(dicts[i], stopwords, non_solr))
+            if non_solr:
+                main_dict = merge_dicts(main_dict, read_in_non_solr(dicts[i]))
+            else:
+                main_dict = merge_dicts(main_dict, read_in_solr(dicts[i], stopwords))
     path_prefix = concatenate_string_list(dicts[0].split("/")[:-1], "/", add_at_last_string=True)
     path = path_prefix
     previous_abbr = ""
@@ -231,17 +288,25 @@ if __name__=="__main__":
                            help="If you want to merge dictionaries of the same language, give the language code, "
                                 "since otherwise the files will be named just like a merged version of the first dict in"
                                 "different languages (which might replace existing dictionaries of that kind).")
-    argparser.add_argument("-ns", "--non-solr", dest="non_solr", action="store_true", help="If this option is set, Solr-specific preproc"
-                                                                          "essing of the dictionaries (e.g. replacement"
-                                                                          " of hyphens with whitespaces) will not be "
-                                                                          "performed.")
+    argparser.add_argument("-ns", "--non-solr", dest="non_solr", action="store_true", help="If this option is set, the "
+                                                                                           "dictionaries will only be "
+                                                                                           "pasted together and no "
+                                                                                           "preprocessing (e.g. removal"
+                                                                                           " of diacritics) willbe "
+                                                                                           "performed. If a word is a "
+                                                                                           "source word in more than one"
+                                                                                           " dictionary, the entry of "
+                                                                                           "the dictionary with higher "
+                                                                                           "priority will be kept, "
+                                                                                           "the other one(s) will be "
+                                                                                           "deleted.")
     args = argparser.parse_args()
 
     command = ["preprocess_dicts.py", args.sw_file] + args.dicts
     if args.la_code:
         command += ["-lc " + args.la_code]
     if args.non_solr:
-        command *= ["--non-solr"]
+        command += ["--non-solr"]
 
     main(args.dicts, args.sw_file, command, args.la_code, args.non_solr)
 
