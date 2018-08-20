@@ -261,7 +261,15 @@ def main(dicts, sw_file, command, la_code, non_solr):
     path = path_prefix
     previous_abbr = ""
     for i in range(len(dicts)):
-        abbr = dicts[i].split("/")[-1].split(".")[0]
+        abbrs = dicts[i].split("/")[-1].split(".")
+        abbr = ""
+
+        # iterate over abbrs to get full name of dict
+        for j in range(len(abbrs)):
+            if j < len(abbrs)-1:
+                if not (abbrs[j].startswith("en") or abbrs[j].startswith("de") or abbrs[j].startswith("fr") or abbrs[j].startswith("es")):
+                    abbr += abbrs[j]
+
         if abbr == previous_abbr:
             continue
         path += abbr + "."
@@ -271,9 +279,9 @@ def main(dicts, sw_file, command, la_code, non_solr):
     else:
         path += "solr."
     if la_code:
-        path += "merged." + la_code
+        path += "single-language." + la_code
     else:
-        path += "concatenated.txt"
+        path += "all-languages.txt"
     print("Path:", path)
     print("Writing new dict to file...")
     write_to_file(main_dict, path, command)
