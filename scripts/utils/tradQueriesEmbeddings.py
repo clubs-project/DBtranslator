@@ -4,8 +4,7 @@
 """ Translates the query terms previously extracted with extractParse.py.
     Only the MeSH quad-lexicon is used. 
     Translation at word level using multilingual word embeddings extracted from a ML-NMT system
-    is applied if the complete term is not in the dictionary
-    
+    is applied if the complete term is not in the dictionary    
     Date: 16.08.2018
     Author: cristinae
 """
@@ -80,6 +79,8 @@ class QueryTrad(object):
     def getCtDict(self):
         return self.ctDict
 
+    def getSWlist(self):
+        return self.swList
 
 
 def rreplace(s, old, new, occurrence):
@@ -119,62 +120,93 @@ def cleanEndString(toClean):
     return clean
 
 
+def checkCase(toCheck, ctDict):
+    """ Looks for a case that matches the casing in the lexicon and returns the 
+        string to translate and the capitalisation that has to be restored 
+    """
+    # we check for all the capitalizations
+    capitalized = False
+    if toCheck.istitle():
+       capitalized = True
+    if toCheck in ctDict:
+       toTrad = toCheck
+    elif toCheck.lower() in ctDict:
+       toTrad = toCheck.lower()
+    elif toCheck.capitalize() in ctDict:
+       toTrad = toCheck.capitalize()
+    else:
+       toTrad = toCheck
+    return capitalized, toTrad
+
+
+def extractTradFromDict(toTrad, capitalized, stringTrad, ctDict):
+    """ Extracts the translation in the four languages of a term in the lexicon
+        and returns a string with the translation in the four languages 
+    """
+    # 11-Desoxycortison|||en:Cortodoxone|||es:Cortodoxona|||fr:Cortodoxone
+    entries = ctDict[toTrad]
+    trads = entries.split("|||")
+    for trad in trads:
+        (lang, translation) = trad.split(":")
+         # recover the source casing in the translation
+        if capitalized == True:
+           translation = translation.capitalize()
+        else:
+           translation = translation.lower()
+        stringTrad = stringTrad + " "+lang+"::"+translation
+    return stringTrad
+
+
 def translate(string, proc):
     """ Translates an input string. If it is not found in the dictionary, the string
         is split into words and translated independently with word embeddings. 
     """
 
-    toTrad = ""
-    stringTrad = ""
     ctDict = proc.getCtDict()
-
+    swList = proc.getSWlist()
     string=cleanEndString(string)
-    # we check for all the capitalizations
-    capitalized = False
-    if string.istitle():
-       capitalized = True
-    if string in ctDict:
-       toTrad = string
-    elif string.lower() in ctDict:
-       toTrad = string.lower()
-    elif string.capitalize() in ctDict:
-       toTrad = string.capitalize()
-    else:
-       toTrad = string
- 
+    capitalized, toTrad =  checkCase(string, ctDict)
+    print(toTrad)
     #if (complete):
     #    numTerms += 1
     #    words = string.split(" ")
     #    numWords = numWords + len(words)
     # entries are read in a specific language order (python >3.6)
+    stringTrad = ""
+    # First we check if the full phrase is in the lexicon
     if toTrad in ctDict:
-       # 11-Desoxycortison|||en:Cortodoxone|||es:Cortodoxona|||fr:Cortodoxone
-       entries = ctDict[toTrad]
-       trads = entries.split("|||")
-       for trad in trads:
-           (lang, translation) = trad.split(":")
-            # recover the source casing in the translation
-           if capitalized == True:
-              translation = translation.capitalize()
-           else:
-              translation = translation.lower()
-           stringTrad = stringTrad + " "+lang+"::"+translation
-       #return allTrads  
+       stringTrad = extractTradFromDict(toTrad, capitalized, stringTrad, ctDict)
     else:
         words = toTrad.split()
+        # if it is not we split by word
+        stringTrad = ""
         for word in words:
-           bped = easyBPE.applyBPE(proc.bpe, word)
-           for subunit in bped:
-               print(subunit)
-               vector =  proc.embeddingL1[subunit]
-               enSubunit = proc.embeddingEn.similar_by_vector(vector,topn=2)
-               esSubunit = proc.embeddingEs.similar_by_vector(vector,topn=2)
-               deSubunit = proc.embeddingDe.similar_by_vector(vector,topn=2)
-               frSubunit = proc.embeddingFr.similar_by_vector(vector,topn=2)
-               print(enSubunit)
-               print(esSubunit)
-               print(deSubunit)
-               print(frSubunit)
+        # we ignore any word that is a stopword in any language
+            if word in swList:
+               continue
+        # and check if they are in the lexicon
+            capitalized, toTrad =  checkCase(string, ctDict)
+            if toTrad in swList:
+               continue
+            if toTrad in ctDict:
+               stringTrad = stringTrad + extractTradFromDict(toTrad, capitalized, stringTrad, ctDict)
+            else:
+           # if not, we look for the closest translation(s) in the embeddings space
+               bped = easyBPE.applyBPE(proc.bpe, word)
+               for subunit in bped:
+                   print(subunit)
+                   vector =  proc.embeddingL1[subunit]
+                   allSubunit = proc.embeddingL1.similar_by_vector(vector,topn=5)
+                   enSubunit = proc.embeddingEn.similar_by_vector(vector,topn=2)
+                   esSubunit = proc.embeddingEs.similar_by_vector(vector,topn=2)
+                   deSubunit = proc.embeddingDe.similar_by_vector(vector,topn=2)
+                   frSubunit = proc.embeddingFr.similar_by_vector(vector,topn=2)
+                   print(allSubunit)
+                   print(enSubunit)
+                   print(esSubunit)
+                   print(deSubunit)
+                   print(frSubunit)
+
     return stringTrad
 
 
