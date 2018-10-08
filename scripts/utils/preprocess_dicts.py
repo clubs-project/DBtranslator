@@ -55,7 +55,7 @@ def read_in_non_solr(input_path):
     return la_dict
 
 
-def replace_punctuation(word, regex):
+def replace_regex_with_whitespace(word, regex):
     # Solr replaces punctuation signs with whitespaces when parsing queries
     return regex.sub(' ', word)
 
@@ -73,7 +73,8 @@ def read_in_solr(input_path, stopwords):
     - if non_solr == False, hyphens will be replaced with whitespaces
     '''
     la_dict = dict()
-    regex = re.compile('[%s]' % re.escape(string.punctuation))
+    punctuation_regex = re.compile('[%s]' % re.escape(string.punctuation))
+    whitespace_regex = re.compile('\s\s+')  # at least two whitespace characters
     with open(input_path, "r") as f:
         umlaut_pattern = re.compile('[ÜǘÄäÖö]+')
         for line in f:
@@ -137,7 +138,10 @@ def read_in_solr(input_path, stopwords):
             source_word = unicodedata.normalize('NFKD', source_word).encode('ASCII', 'ignore').decode()
 
             # String.punctuation only knows ASCII punctuation
-            source_word = replace_punctuation(source_word, regex)
+            source_word = replace_regex_with_whitespace(source_word, punctuation_regex)
+
+            # Replace whitespace that consists of at least two characters with one ws character
+            source_word = replace_regex_with_whitespace(source_word, whitespace_regex)
 
             # delete unnecessary annotation
             source_word = source_word.replace('[dokumenttyp]', '').strip()
@@ -150,7 +154,9 @@ def read_in_solr(input_path, stopwords):
 
             if duplicate_needed:
                 source_word_duplicate = unicodedata.normalize('NFKD', source_word_duplicate).encode('ASCII', 'ignore').decode()
-                source_word_duplicate = replace_punctuation(source_word_duplicate, regex)
+                source_word_duplicate = replace_regex_with_whitespace(source_word_duplicate, punctuation_regex)
+                # Replace whitespace that consists of at least two characters with one ws character
+                source_word_duplicate = replace_regex_with_whitespace(source_word_duplicate, whitespace_regex)
                 source_word_duplicate = source_word_duplicate.replace('[dokumenttyp]', '').strip()
                 if source_word_duplicate.strip() == "":
                     duplicate_needed = False
@@ -173,7 +179,10 @@ def read_in_solr(input_path, stopwords):
                 translation = unicodedata.normalize('NFKD', translation).encode(encoding='ASCII', errors='ignore').decode()
 
                 # String.punctuation only knows ASCII punctuation
-                translation = replace_punctuation(translation, regex)
+                translation = replace_regex_with_whitespace(translation, punctuation_regex)
+
+                # Replace whitespace that consists of at least two characters with one ws character
+                translation = replace_regex_with_whitespace(translation, whitespace_regex)
 
                 translation = translation.replace('[dokumenttyp]', '').strip()
 
