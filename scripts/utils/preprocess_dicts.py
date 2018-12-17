@@ -22,7 +22,7 @@ def rreplace(s, old, new, num_occ):
     return new.join(li)
 
 
-def read_in_non_solr(input_path):
+def read_in_non_solr(input_path, diff):
     '''Simply reads in a dictionary, no preprocessing at all'''
     la_dict = dict()
     with open(input_path, "r") as f:
@@ -36,12 +36,16 @@ def read_in_non_solr(input_path):
 
             la_dict[source_word] = dict()
 
+            different_entries = False
+
             # iterate over translations
             delete_entry = False
             for i in range(1, len(entries)):
                 la_code = entries[i].split(":")[0]
                 translation = concatenate_string_list(entries[i].split(":")[1:], ":")
                 translation = translation.rstrip()
+                if source_word != translation:
+                    different_entries = True
 
                 # remove whole entry if translation is empty
                 if translation == "":
@@ -49,6 +53,9 @@ def read_in_non_solr(input_path):
                     break
 
                 la_dict[source_word][la_code] = translation
+
+            if diff and not different_entries:
+                delete_entry = True
 
             if delete_entry:
                 la_dict.pop(source_word, None)
@@ -60,7 +67,7 @@ def replace_regex_with_whitespace(word, regex):
     return regex.sub(' ', word)
 
 
-def read_in_solr(input_path, stopwords):
+def read_in_solr(input_path, stopwords, diff):
     '''Reads in a dictionary and cleans it:
     - lowercases the token
     - removes diacritics ('ü' -> 'u')
@@ -163,6 +170,9 @@ def read_in_solr(input_path, stopwords):
                 else:
                     la_dict[source_word_duplicate] = dict()
 
+            different_entries_original = False
+            different_entries_duplicate = False
+
             # iterate over translations
             delete_entry = False
             for i in range(1, len(entries)):
@@ -185,6 +195,10 @@ def read_in_solr(input_path, stopwords):
                 translation = replace_regex_with_whitespace(translation, whitespace_regex)
 
                 translation = translation.replace('[dokumenttyp]', '').strip()
+                if source_word != translation:
+                    different_entries_original = True
+                if source_word_duplicate != translation:
+                    different_entries_duplicate = True
 
                 # translation might be empty after all these normalization steps -> remove whole entry
                 if translation.strip() == "":
@@ -194,6 +208,12 @@ def read_in_solr(input_path, stopwords):
                 la_dict[source_word][la_code] = translation
                 if duplicate_needed:
                     la_dict[source_word_duplicate][la_code] = translation
+
+            if diff and not different_entries_original:
+                la_dict.pop(source_word, None)
+
+            if diff and not different_entries_duplicate:
+                la_dict.pop(source_word_duplicate, None)
 
             if delete_entry:
                 la_dict.pop(source_word, None)
@@ -247,7 +267,7 @@ def read_in_sw_file(sw_file):
     return stopwords
 
 
-def main(dicts, sw_file, command, la_code, non_solr):
+def main(dicts, sw_file, command, la_code, non_solr, diff):
     """ dicts[0] > dicts[1] > ... in terms of priority"""
     stopwords = read_in_sw_file(sw_file)
     main_dict = dict()
@@ -257,15 +277,15 @@ def main(dicts, sw_file, command, la_code, non_solr):
 
             # we can make two different versions of the dicts: a preprocessed one and a non-preprocessed one
             if non_solr:
-                main_dict = read_in_non_solr(dicts[0])
+                main_dict = read_in_non_solr(dicts[0], diff)
             else:
-                main_dict = read_in_solr(dicts[0], stopwords)
+                main_dict = read_in_solr(dicts[0], stopwords, diff)
         else:
             print("Merging previous dict and dict", str(i+1), "...")
             if non_solr:
-                main_dict = merge_dicts(main_dict, read_in_non_solr(dicts[i]))
+                main_dict = merge_dicts(main_dict, read_in_non_solr(dicts[i], diff))
             else:
-                main_dict = merge_dicts(main_dict, read_in_solr(dicts[i], stopwords))
+                main_dict = merge_dicts(main_dict, read_in_solr(dicts[i], stopwords, diff))
     path_prefix = concatenate_string_list(dicts[0].split("/")[:-1], "/", add_at_last_string=True)
     path = path_prefix
     previous_abbr = ""
@@ -295,6 +315,7 @@ def main(dicts, sw_file, command, la_code, non_solr):
     print("Writing new dict to file...")
     write_to_file(main_dict, path, command)
 
+
 if __name__=="__main__":
     argparser = argparse.ArgumentParser(description="Cleans and merges different dictionaries, sticking to a given order")
     argparser.add_argument("sw_file", type=str, help="Path to file containing stopwords in all languages (mandatory)")
@@ -305,18 +326,14 @@ if __name__=="__main__":
                            help="If you want to merge dictionaries of the same language, give the language code, "
                                 "since otherwise the files will be named just like a merged version of the first dict in"
                                 "different languages (which might replace existing dictionaries of that kind).")
-    argparser.add_argument("-ns", "--non-solr", dest="non_solr", action="store_true", help="If this option is set, the "
-                                                                                           "dictionaries will only be "
-                                                                                           "pasted together and no "
-                                                                                           "preprocessing (e.g. removal"
-                                                                                           " of diacritics) willbe "
-                                                                                           "performed. If a word is a "
-                                                                                           "source word in more than one"
-                                                                                           " dictionary, the entry of "
-                                                                                           "the dictionary with higher "
-                                                                                           "priority will be kept, "
-                                                                                           "the other one(s) will be "
-                                                                                           "deleted.")
+    argparser.add_argument("-ns", "--non-solr", dest="non_solr", action="store_true",
+                           help="If this option is set, the dictionaries will only be pasted together and no preproces"
+                                "sing (e.g. removal of diacritics) will be performed. If a word is a source word in "
+                                "more than one dictionary, the entry of the dictionary with higher priority will be "
+                                "kept, the other one(s) will be deleted.")
+    argparser.add_argument("-d", "--only-diff", dest="diff", action="store_true",
+                           help="If this option is set, a term that is exactly the same in all four languages will not "
+                                "be part of the final dictionary.")
     args = argparser.parse_args()
 
     command = ["preprocess_dicts.py", args.sw_file] + args.dicts
@@ -324,6 +341,8 @@ if __name__=="__main__":
         command += ["-lc " + args.la_code]
     if args.non_solr:
         command += ["--non-solr"]
+    if args.diff:
+        command += ["--only-diff"]
 
-    main(args.dicts, args.sw_file, command, args.la_code, args.non_solr)
+    main(args.dicts, args.sw_file, command, args.la_code, args.non_solr), args.diff
 
