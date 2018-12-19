@@ -307,10 +307,15 @@ def main(dicts, sw_file, command, la_code, non_solr, diff):
         path += "non-solr."
     else:
         path += "solr."
+    if diff:
+        path += "diff."
+    else:
+        path += "non-diff."
     if la_code:
         path += "single-language." + la_code
     else:
         path += "all-languages.txt"
+
     print("Path:", path)
     print("Writing new dict to file...")
     write_to_file(main_dict, path, command)
@@ -320,7 +325,8 @@ if __name__=="__main__":
     argparser = argparse.ArgumentParser(description="Cleans and merges different dictionaries, sticking to a given order")
     argparser.add_argument("sw_file", type=str, help="Path to file containing stopwords in all languages (mandatory)")
     # nargs='+': we get at least 1 argument, but there can be finitely many more
-    argparser.add_argument("dicts", type=str, nargs='+', help="Paths to dictionaries, priority will be the order in the command ")
+    argparser.add_argument("dicts", type=str, nargs='+',
+                           help="Paths to dictionaries, priority will be the order in the command ")
 
     argparser.add_argument("-lc", "--language-code", dest="la_code", default="",
                            help="If you want to merge dictionaries of the same language, give the language code, "
@@ -344,5 +350,5 @@ if __name__=="__main__":
     if args.diff:
         command += ["--only-diff"]
 
-    main(args.dicts, args.sw_file, command, args.la_code, args.non_solr), args.diff
+    main(args.dicts, args.sw_file, command, args.la_code, args.non_solr, args.diff)
 
