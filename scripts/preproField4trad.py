@@ -53,7 +53,8 @@ def main(path, rows, fieldType):
         # a family correspond to a DB more or less
         #directory = str(d['ID'])
         id = str(d['ID'])
-        pos = id.index('_') 
+        #if (id.startswith("A")):
+        pos = id.index('_')
         directory = path+id[:pos]  #pos+2 to include the 1st digit per DB
         if not os.path.exists(directory):
            os.makedirs(directory)

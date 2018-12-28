@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 """ Extracts the titles from the PubPshyc database, and prepares the files 
- to be translated with Marian
- Date: 22.12.2017
- Author: cristinae
+    to be translated with Marian/OpenNMT
+    Date: 22.12.2017
+    Last modified: 28.12.2018
+    Author: cristinae
 """
 
 import urllib.request
@@ -18,7 +19,7 @@ def main(path, rows):
     #field = "TI_orig, TI_orig_code, TI_D, TI_E, TI_F, TI_S"
     fields = ['TI_D', 'TI_E', 'TI_F', 'TI_S']
     field = ','.join(fields)
-    name = "titles"
+    name = "title"
     solrBase = "http://136.199.85.71:8001/solr/"
     solrInstance = "pubpsych-core"
     #params = ['indent=on', 'wt=json', 'fl=ID,'+field, 'q=*:*', 'rows=1037540']
@@ -53,31 +54,31 @@ def main(path, rows):
         tit = 'TI_D'
         if tit in d:
            title = str(d[tit]) + str('\n')
-           header = id+' '+tit+str('\t')+'<'+name+'> ' 
-           fde.write(header + '<2es> ' + title) 
-           fde.write(header + '<2en> ' + title) 
-           fde.write(header + '<2fr> ' + title) 
+           header = id+' '+tit+str('\t')
+           fde.write(header + '<2es> ' +'<'+name+'> ' + title) 
+           fde.write(header + '<2en> ' +'<'+name+'> ' + title) 
+           fde.write(header + '<2fr> ' +'<'+name+'> ' + title) 
         tit = 'TI_E'
         if tit in d:
            title = str(d[tit]) + str('\n')
-           header = id+' '+tit+str('\t')+'<'+name+'> ' 
-           fen.write(header + '<2es> ' + title) 
-           fen.write(header + '<2de> ' + title)
-           fen.write(header + '<2fr> ' + title)
+           header = id+' '+tit+str('\t')
+           fen.write(header + '<2es> ' +'<'+name+'> ' + title) 
+           fen.write(header + '<2de> ' +'<'+name+'> ' + title)
+           fen.write(header + '<2fr> ' +'<'+name+'> ' + title)
         tit = 'TI_F'
         if tit in d:
            title = str(d[tit]) + str('\n')
-           header = id+' '+tit+str('\t')+'<'+name+'> ' 
-           ffr.write(header + '<2es> ' + title)
-           ffr.write(header + '<2de> ' + title)
-           ffr.write(header + '<2en> ' + title)
+           header = id+' '+tit+str('\t')
+           ffr.write(header + '<2es> ' +'<'+name+'> ' + title)
+           ffr.write(header + '<2de> ' +'<'+name+'> ' + title)
+           ffr.write(header + '<2en> ' +'<'+name+'> ' + title)
         tit = 'TI_S'
         if tit in d:
            title = str(d[tit]) + str('\n')
-           header = id+' '+tit+str('\t')+'<'+name+'> ' 
-           fes.write(header + '<2fr> ' + title)
-           fes.write(header + '<2de> ' + title)
-           fes.write(header + '<2en> ' + title)
+           header = id+' '+tit+str('\t')
+           fes.write(header + '<2fr> ' +'<'+name+'> ' + title)
+           fes.write(header + '<2de> ' +'<'+name+'> ' + title)
+           fes.write(header + '<2en> ' +'<'+name+'> ' + title)
         fes.close()     
         fen.close()     
         ffr.close()     
