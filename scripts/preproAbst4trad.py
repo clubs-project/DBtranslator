@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """ Extracts the abstracts from the PubPshyc database, and prepares the files 
-    to be translated with Marian
+    to be translated with Marian/OpenNMT
     Date: 29.12.2017
+    Last modified: 28.12.2018
     Author: cristinae
 """
 
@@ -23,7 +24,7 @@ def main(path, rows, absType):
        fields = ['ABNHR_D', 'ABNHR_E', 'ABNHR_F', 'ABNHR_S']
     field = ','.join(fields)
 
-    name = "abstracts"
+    name = "abstract"
     solrBase = "http://136.199.85.71:8001/solr/"
     solrInstance = "pubpsych-core"
     params = ['indent=on', 'wt=json', 'fl=ID,'+field, 'q=*:*', 'rows='+rows]
@@ -52,60 +53,59 @@ def main(path, rows, absType):
         ffr = open(directory+'/'+ name+'.fr', 'a')
         fde = open(directory+'/'+ name+'.de', 'a')
         # Extract the abstract, split by sentence and prepare it to translate into the other languages
-        # There was no corpus for <abstracts> <2fr>
-        # NOTE: We need backtranslation in the future
+        # with the new nomenclature used in training
         fieldLabel = fields[0] #'D'
         if fieldLabel in d:
-           header = id+' '+fieldLabel+str('\t')+'<'+name+'> ' 
+           header = id+' '+fieldLabel+str('\t') 
            sentences = SS.splitter('de', str(d[fieldLabel]))
            for sent in sentences:
                abstract = sent + str('\n')
-               fde.write(header + '<2es> ' + abstract) 
+               fde.write(header + '<2es> ' +'<'+name+'> '+ abstract) 
            for sent in sentences:
                abstract = sent + str('\n')
-               fde.write(header + '<2en> ' + abstract) 
+               fde.write(header + '<2en> ' +'<'+name+'> '+ abstract) 
            for sent in sentences:
                abstract = sent + str('\n')
-               fde.write(id+' '+fieldLabel+str('\t')+ '<2fr> ' + abstract) 
+               fde.write(header + '<2fr> ' +'<'+name+'> '+ abstract) 
         fieldLabel = fields[1] #'E'
         if fieldLabel in d:
-           header = id+' '+fieldLabel+str('\t')+'<'+name+'> ' 
+           header = id+' '+fieldLabel+str('\t') 
            sentences = SS.splitter('en', str(d[fieldLabel]))
            for sent in sentences:
                abstract = sent + str('\n')
-               fen.write(header + '<2es> ' + abstract) 
+               fen.write(header + '<2es> ' +'<'+name+'> '+ abstract) 
            for sent in sentences:
                abstract = sent + str('\n')
-               fen.write(header + '<2de> ' + abstract)
+               fen.write(header + '<2de> ' +'<'+name+'> '+ abstract)
            for sent in sentences:
                abstract = sent + str('\n')
-               fen.write(id+' '+fieldLabel+str('\t')+ '<2fr> ' + abstract)
+               fen.write(header + '<2fr> ' +'<'+name+'> '+ abstract)
         fieldLabel = fields[2] #'F'
         if fieldLabel in d:
-           header = id+' '+fieldLabel+str('\t')+'<'+name+'> ' 
+           header = id+' '+fieldLabel+str('\t') 
            sentences = SS.splitter('fr', str(d[fieldLabel]))
            for sent in sentences:
                abstract = sent + str('\n')
-               ffr.write(header + '<2es> ' + abstract)
+               ffr.write(header + '<2es> ' +'<'+name+'> '+ abstract)
            for sent in sentences:
                abstract = sent + str('\n')
-               ffr.write(header + '<2de> ' + abstract)
+               ffr.write(header + '<2de> ' +'<'+name+'> '+ abstract)
            for sent in sentences:
                abstract = sent + str('\n')
-               ffr.write(header + '<2en> ' + abstract)
+               ffr.write(header + '<2en> ' +'<'+name+'> '+ abstract)
         fieldLabel = fields[3] #'S'
         if fieldLabel in d:
-           header = id+' '+fieldLabel+str('\t')+'<'+name+'> ' 
+           header = id+' '+fieldLabel+str('\t')
            sentences = SS.splitter('es', str(d[fieldLabel]))
            for sent in sentences:
                abstract = sent + str('\n')
-               fes.write(id+' '+fieldLabel+str('\t')+ '<2fr> ' + abstract)
+               fes.write(header + '<2fr> ' +'<'+name+'> ' + abstract)
            for sent in sentences:
                abstract = sent + str('\n')
-               fes.write(header + '<2de> ' + abstract)
+               fes.write(header + '<2de> ' +'<'+name+'> ' + abstract)
            for sent in sentences:
                abstract = sent + str('\n')
-               fes.write(header + '<2en> ' + abstract)
+               fes.write(header + '<2en> ' +'<'+name+'> ' + abstract)
         fes.close()     
         fen.close()     
         ffr.close()     

@@ -56,15 +56,15 @@ echo "Translation Pipeline"
 # Download the titles from the DB and prepare the format for translation
 # A file per subDB and language is created (pre-processing depends on the language)
 if [ $field == "tit" ]; then
-   outPath=$outPath'titles/'
+   outPath=$outPath'title/'
    python3 preproTits4trad.py $outPath $sizeDB
 elif [ $field == "abs" ]; then
-   outPath=$outPath'abstracts/'
-   #python3 preproAbst4trad.py $outPath $sizeDB $absType
+   outPath=$outPath'abstract/'
+   python3 preproAbst4trad.py $outPath $sizeDB $absType
 fi
 
 # Extract text (with cuts) and normalise
-# (long list of commands because sentences in French behave different)
+# (long list of commands because sentences in French behave different at the beginning)
 echo "Normalising text..."
 for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do cut -f2 $i > $i.cut; cut -f1 $i > $i.head; 
    cat $i.cut | rev | cut -d">" -f2-  | rev > $i.labels; sed -i 's/$/>/' $i.labels;
@@ -82,9 +82,15 @@ echo "Truecasing..."
 for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do perl $bins/truecase.perl --model $models/modelTC.EpWP.$j < $i.tok > $i.tc; done; done;
 rm $outPath/*/*.norm
 
+# Patch while joining versions
+for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do cut -d' ' -f1 $i.labels > $i.lab1; cut -d' ' -f2 $i.labels > $i.lab2; paste -d' ' $i.lab2 $i.lab1 $i.tc > $i.tc2; done; done;
+
+
 # Cleaning
 find . -size 0 -delete
-for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do paste -d' ' $i.labels $i.tc > $i.tc2; done; done;
+# CRIS: a substituir pel patch
+rm $outPath/*/*.lab?
+# for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do paste -d' ' $i.labels $i.tc > $i.tc2; done; done;
 rm $outPath/*/*.tok
 for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do mv $i.tc2 $i.tc; done; done;
 
@@ -93,8 +99,12 @@ echo "Applying BPE..."
 for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do python $bins/apply_bpe.py -c $models/L1L2.allw.bpe < $i.tc > $i.bpe; done; done;
 
 # Running the decoder
-echo "Translating..."
-for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do ../marian/build/amun -m $models/model_L1L2w3_v80k.iter1620000_adaptepoch4.npz $models/model_L1L2w3_v80k.iter1640000_adaptepoch5.npz -s $models/general.tc50shuf.w.bpe.L1.json -t $models/general.tc50shuf.w.bpe.L2.json  --cpu-threads $threads --input-file $i.bpe -b 6 --normalize --mini-batch 64  --maxi-batch 100  --log-progress=off --log-info=off > $i.trad.bpe; done; done;
+#echo "Translating with Marian..."
+#for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do ../marian/build/amun -m $models/model_L1L2w3_v80k.iter1620000_adaptepoch4.npz $models/model_L1L2w3_v80k.iter1640000_adaptepoch5.npz -s $models/general.tc50shuf.w.bpe.L1.json -t $models/general.tc50shuf.w.bpe.L2.json  --cpu-threads $threads --input-file $i.bpe -b 6 --normalize --mini-batch 64  --maxi-batch 100  --log-progress=off --log-info=off > $i.trad.bpe; done; done;
+#find . -size 0 -delete
+
+echo "Translating with OpenNMT..."
+for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do python3  ~/bin/2OpenNMT-py/translate.py --gpu 0 -model $models/_step_150000.pt  -src $i.bpe  -output $i.trad.bpe  -share_vocab -beam_size 6  -replace_unk -alpha 0.6; done; done;
 find . -size 0 -delete
 
 # de-BPE and de-tokenise
