@@ -83,7 +83,8 @@ def read_in_solr(input_path, stopwords, diff):
     punctuation_regex = re.compile('[%s]' % re.escape(string.punctuation))
     whitespace_regex = re.compile('\s\s+')  # at least two whitespace characters
     with open(input_path, "r") as f:
-        umlaut_pattern = re.compile('[ÜǘÄäÖö]+')
+        # lower-case letters are sufficient, since we use the umlaut pattern once we have already lower-cased the word
+        umlaut_pattern = re.compile('[üäö]+')
         for line in f:
             # we want to have duplicates like -ise and -ize (BE/AE) and fuhrung/fuehrung (German), fuhrung is the
             # result of unicodedata.normalize(...) applied to "führung", fuehrung has to be added manually
