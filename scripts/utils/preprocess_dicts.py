@@ -83,7 +83,8 @@ def read_in_solr(input_path, stopwords, diff):
     punctuation_regex = re.compile('[%s]' % re.escape(string.punctuation))
     whitespace_regex = re.compile('\s\s+')  # at least two whitespace characters
     with open(input_path, "r") as f:
-        umlaut_pattern = re.compile('[ÜǘÄäÖö]+')
+        # lower-case letters are sufficient, since we use the umlaut pattern once we have already lower-cased the word
+        umlaut_pattern = re.compile('[üäö]+')
         for line in f:
             # we want to have duplicates like -ise and -ize (BE/AE) and fuhrung/fuehrung (German), fuhrung is the
             # result of unicodedata.normalize(...) applied to "führung", fuehrung has to be added manually
@@ -157,6 +158,11 @@ def read_in_solr(input_path, stopwords, diff):
             if source_word.strip() == "":
                 continue
 
+            """check once more for stopwords, since after removal of diacritics, a word in one language might look like
+             a stopword in another one, e.g. French thé -> English the"""
+            if source_word in stopwords:
+                continue
+
             la_dict[source_word] = dict()
 
             if duplicate_needed:
@@ -165,7 +171,9 @@ def read_in_solr(input_path, stopwords, diff):
                 # Replace whitespace that consists of at least two characters with one ws character
                 source_word_duplicate = replace_regex_with_whitespace(source_word_duplicate, whitespace_regex)
                 source_word_duplicate = source_word_duplicate.replace('[dokumenttyp]', '').strip()
-                if source_word_duplicate.strip() == "":
+                """check once more for stopwords, since after removal of diacritics, a word in one language might look like
+                             a stopword in another one, e.g. French thé -> English the"""
+                if source_word_duplicate.strip() == "" or source_word_duplicate in stopwords:
                     duplicate_needed = False
                 else:
                     la_dict[source_word_duplicate] = dict()
