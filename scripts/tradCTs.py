@@ -115,7 +115,8 @@ def translate(string, ctDict, lang, complete, plurals, original):
     global numTerms
     global numWords
     global numWordsUntrad
-    global l1
+    global l1 #needed only for counting, so that we do it only once
+
 
     toTrad = ""
     stringTrad = ""
@@ -174,8 +175,9 @@ def main(inF, outF):
     global l1
 
     language = os.path.splitext(inF)[1].replace(".","")
-    ctFile = ctPath + "quadLexicon."+language+"key.txt"
-    #ctFile = ctPath + "meshSplit2."+language+"key.txt"
+    #ctFile = ctPath + "quadLexicon."+language+"key.txt"
+    ctFile = ctPath + "meshSplit2."+language+"key.txt"
+    print(ctFile)
 
     if(language=="en"):
        l1="fr"
@@ -206,8 +208,6 @@ def main(inF, outF):
     # Read the CTs from file
     fOUT = open(outF, 'w')
     with open(inF) as f:
-       id = 'empty'
-       text = ''
        for line in f:
            line = line.strip()
            fields = line.split('\t')

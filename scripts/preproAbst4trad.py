@@ -4,7 +4,7 @@
 """ Extracts the abstracts from the PubPshyc database, and prepares the files 
     to be translated with Marian/OpenNMT
     Date: 29.12.2017
-    Last modified: 28.12.2018
+    Last modified: 23.01.2019
     Author: cristinae
 """
 
@@ -14,6 +14,48 @@ import json
 import os
 import sys
 import sentenceSplitter as SS
+
+
+maxSentLength = 100;
+
+# Simple compatibility
+try:
+    # Python 2
+    xrange
+except NameError:
+    # Python 3, xrange is now named range
+    xrange = range
+
+
+
+def splitLongSentences(sentences):
+    ''' 
+    Split long sentences into shorter units so that they can be translated.
+    Sentences are spitted by the ';' character as this is the problem in the PP DB
+    '''
+
+    sentencesShort = []
+    for sent in sentences:
+        words = sent.split()
+        l = len(words)
+        if (l > maxSentLength):
+            semicolonsPos = ( [pos for pos, char in enumerate(sent) if char == ';'])
+            subsentences = []
+            if (len(semicolonsPos) >= 1):
+                subsentences = sent.split(";")
+                for subsent in subsentences:
+                    sentencesShort.append(subsent+';')
+            else:
+                for i in xrange(0, l, maxSentLength):
+                    subsentences = ' '.join(words[i:i+maxSentLength])
+            for subsent in subsentences:
+                sentencesShort.append(subsent)
+
+        else:
+           sentencesShort.append(sent)
+
+    return sentencesShort
+
 
 def main(path, rows, absType):
 
@@ -25,9 +67,12 @@ def main(path, rows, absType):
     field = ','.join(fields)
 
     name = "abstract"
-    solrBase = "http://136.199.85.71:8001/solr/"
+    solrBase = "http://136.199.85.71:8002/solr/"
     solrInstance = "pubpsych-core"
-    params = ['indent=on', 'wt=json', 'fl=ID,'+field, 'q=*:*', 'rows='+rows]
+    #general: 
+    #params = ['indent=on', 'wt=json', 'fl=ID,'+field, 'q=*:*', 'rows='+rows]                                                                             
+    #if we only want a DB (ACCNO here)                                                                                                                    
+    params = ['indent=on', 'wt=json', 'fl=ID,'+field, 'q=ACCNO:[%20*%20TO%20*%20]', 'rows='+rows]
     solrParams = '&'.join(params)
     solrURL = solrBase+solrInstance+"/select?"+solrParams
 
@@ -58,54 +103,58 @@ def main(path, rows, absType):
         if fieldLabel in d:
            header = id+' '+fieldLabel+str('\t') 
            sentences = SS.splitter('de', str(d[fieldLabel]))
+           sentences = splitLongSentences(sentences)
            for sent in sentences:
                abstract = sent + str('\n')
-               fde.write(header + '<2es> ' +'<'+name+'> '+ abstract) 
+               fde.write(header +'<'+name+'> '+ '<2es> ' + abstract) 
            for sent in sentences:
                abstract = sent + str('\n')
-               fde.write(header + '<2en> ' +'<'+name+'> '+ abstract) 
+               fde.write(header +'<'+name+'> '+ '<2en> ' + abstract) 
            for sent in sentences:
                abstract = sent + str('\n')
-               fde.write(header + '<2fr> ' +'<'+name+'> '+ abstract) 
+               fde.write(header +'<'+name+'> '+ '<2fr> ' + abstract) 
         fieldLabel = fields[1] #'E'
         if fieldLabel in d:
            header = id+' '+fieldLabel+str('\t') 
            sentences = SS.splitter('en', str(d[fieldLabel]))
+           sentences = splitLongSentences(sentences)
            for sent in sentences:
                abstract = sent + str('\n')
-               fen.write(header + '<2es> ' +'<'+name+'> '+ abstract) 
+               fen.write(header +'<'+name+'> '+ '<2es> ' + abstract) 
            for sent in sentences:
                abstract = sent + str('\n')
-               fen.write(header + '<2de> ' +'<'+name+'> '+ abstract)
+               fen.write(header +'<'+name+'> '+ '<2de> ' + abstract)
            for sent in sentences:
                abstract = sent + str('\n')
-               fen.write(header + '<2fr> ' +'<'+name+'> '+ abstract)
+               fen.write(header +'<'+name+'> '+ '<2fr> ' + abstract)
         fieldLabel = fields[2] #'F'
         if fieldLabel in d:
            header = id+' '+fieldLabel+str('\t') 
            sentences = SS.splitter('fr', str(d[fieldLabel]))
+           sentences = splitLongSentences(sentences)
            for sent in sentences:
                abstract = sent + str('\n')
-               ffr.write(header + '<2es> ' +'<'+name+'> '+ abstract)
+               ffr.write(header +'<'+name+'> '+ '<2es> ' + abstract)
            for sent in sentences:
                abstract = sent + str('\n')
-               ffr.write(header + '<2de> ' +'<'+name+'> '+ abstract)
+               ffr.write(header +'<'+name+'> '+ '<2de> ' + abstract)
            for sent in sentences:
                abstract = sent + str('\n')
-               ffr.write(header + '<2en> ' +'<'+name+'> '+ abstract)
+               ffr.write(header +'<'+name+'> '+ '<2en> ' + abstract)
         fieldLabel = fields[3] #'S'
         if fieldLabel in d:
            header = id+' '+fieldLabel+str('\t')
            sentences = SS.splitter('es', str(d[fieldLabel]))
+           sentences = splitLongSentences(sentences)
            for sent in sentences:
                abstract = sent + str('\n')
-               fes.write(header + '<2fr> ' +'<'+name+'> ' + abstract)
+               fes.write(header +'<'+name+'> ' + '<2fr> '+ abstract)
            for sent in sentences:
                abstract = sent + str('\n')
-               fes.write(header + '<2de> ' +'<'+name+'> ' + abstract)
+               fes.write(header +'<'+name+'> ' + '<2de> ' + abstract)
            for sent in sentences:
                abstract = sent + str('\n')
-               fes.write(header + '<2en> ' +'<'+name+'> ' + abstract)
+               fes.write(header +'<'+name+'> ' + '<2en> ' + abstract)
         fes.close()     
         fen.close()     
         ffr.close()     
