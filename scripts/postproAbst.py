@@ -18,6 +18,7 @@ def main(inF, outF):
        for line in f:
            line = line.strip()
            fields = line.split('>\t')
+           #print(fields)
            if (fields[0] == id):
               text = text + " " + fields[1]
            else:
