@@ -55,30 +55,30 @@ def main(path, rows):
         if tit in d:
            title = str(d[tit]) + str('\n')
            header = id+' '+tit+str('\t')
-           fde.write(header +'<'+name+'> ' + '<2es> ' + title) 
-           fde.write(header +'<'+name+'> ' + '<2en> ' + title) 
-           fde.write(header +'<'+name+'> ' + '<2fr> ' + title) 
+           fde.write(header + '<2es> ' + '<'+name+'> ' + title) 
+           fde.write(header + '<2en> ' + '<'+name+'> ' + title) 
+           fde.write(header + '<2fr> ' + '<'+name+'> ' + title) 
         tit = 'TI_E'
         if tit in d:
            title = str(d[tit]) + str('\n')
            header = id+' '+tit+str('\t')
-           fen.write(header +'<'+name+'> ' + '<2es> ' + title) 
-           fen.write(header +'<'+name+'> ' + '<2de> ' + title)
-           fen.write(header +'<'+name+'> ' + '<2fr> ' + title)
+           fen.write(header + '<2es> ' +'<'+name+'> ' + title) 
+           fen.write(header + '<2de> ' +'<'+name+'> ' + title)
+           fen.write(header + '<2fr> ' +'<'+name+'> ' + title)
         tit = 'TI_F'
         if tit in d:
            title = str(d[tit]) + str('\n')
            header = id+' '+tit+str('\t')
-           ffr.write(header +'<'+name+'> ' + '<2es> ' + title)
-           ffr.write(header +'<'+name+'> ' + '<2de> ' + title)
-           ffr.write(header +'<'+name+'> ' + '<2en> ' + title)
+           ffr.write(header + '<2es> ' + '<'+name+'> ' + title)
+           ffr.write(header + '<2de> ' + '<'+name+'> ' + title)
+           ffr.write(header + '<2en> ' + '<'+name+'> ' + title)
         tit = 'TI_S'
         if tit in d:
            title = str(d[tit]) + str('\n')
            header = id+' '+tit+str('\t')
-           fes.write(header +'<'+name+'> ' + '<2fr> ' + title)
-           fes.write(header +'<'+name+'> ' + '<2de> ' + title)
-           fes.write(header +'<'+name+'> ' + '<2en> ' + title)
+           fes.write(header + '<2fr> ' + '<'+name+'> ' + title)
+           fes.write(header + '<2de> ' + '<'+name+'> ' + title)
+           fes.write(header + '<2en> ' + '<'+name+'> ' + title)
         fes.close()     
         fen.close()     
         ffr.close()     

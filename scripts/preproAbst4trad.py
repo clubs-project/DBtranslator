@@ -70,9 +70,9 @@ def main(path, rows, absType):
     solrBase = "http://136.199.85.71:8002/solr/"
     solrInstance = "pubpsych-core"
     #general: 
-    #params = ['indent=on', 'wt=json', 'fl=ID,'+field, 'q=*:*', 'rows='+rows]                                                                             
+    params = ['indent=on', 'wt=json', 'fl=ID,'+field, 'q=*:*', 'rows='+rows]                                                                             
     #if we only want a DB (ACCNO here)                                                                                                                    
-    params = ['indent=on', 'wt=json', 'fl=ID,'+field, 'q=ACCNO:[%20*%20TO%20*%20]', 'rows='+rows]
+    #params = ['indent=on', 'wt=json', 'fl=ID,'+field, 'q=ACCNO:[%20*%20TO%20*%20]', 'rows='+rows]
     solrParams = '&'.join(params)
     solrURL = solrBase+solrInstance+"/select?"+solrParams
 
@@ -106,13 +106,13 @@ def main(path, rows, absType):
            sentences = splitLongSentences(sentences)
            for sent in sentences:
                abstract = sent + str('\n')
-               fde.write(header +'<'+name+'> '+ '<2es> ' + abstract) 
+               fde.write(header + '<2es> ' +'<'+name+'> '+ abstract) 
            for sent in sentences:
                abstract = sent + str('\n')
-               fde.write(header +'<'+name+'> '+ '<2en> ' + abstract) 
+               fde.write(header + '<2en> ' +'<'+name+'> '+ abstract) 
            for sent in sentences:
                abstract = sent + str('\n')
-               fde.write(header +'<'+name+'> '+ '<2fr> ' + abstract) 
+               fde.write(header + '<2fr> ' +'<'+name+'> '+ abstract) 
         fieldLabel = fields[1] #'E'
         if fieldLabel in d:
            header = id+' '+fieldLabel+str('\t') 
@@ -120,13 +120,13 @@ def main(path, rows, absType):
            sentences = splitLongSentences(sentences)
            for sent in sentences:
                abstract = sent + str('\n')
-               fen.write(header +'<'+name+'> '+ '<2es> ' + abstract) 
+               fen.write(header + '<2es> ' +'<'+name+'> '+ abstract) 
            for sent in sentences:
                abstract = sent + str('\n')
-               fen.write(header +'<'+name+'> '+ '<2de> ' + abstract)
+               fen.write(header + '<2de> ' +'<'+name+'> '+ abstract)
            for sent in sentences:
                abstract = sent + str('\n')
-               fen.write(header +'<'+name+'> '+ '<2fr> ' + abstract)
+               fen.write(header + '<2fr> ' +'<'+name+'> '+ abstract)
         fieldLabel = fields[2] #'F'
         if fieldLabel in d:
            header = id+' '+fieldLabel+str('\t') 
@@ -134,13 +134,13 @@ def main(path, rows, absType):
            sentences = splitLongSentences(sentences)
            for sent in sentences:
                abstract = sent + str('\n')
-               ffr.write(header +'<'+name+'> '+ '<2es> ' + abstract)
+               ffr.write(header + '<2es> ' +'<'+name+'> '+ abstract)
            for sent in sentences:
                abstract = sent + str('\n')
-               ffr.write(header +'<'+name+'> '+ '<2de> ' + abstract)
+               ffr.write(header + '<2de> ' +'<'+name+'> '+ abstract)
            for sent in sentences:
                abstract = sent + str('\n')
-               ffr.write(header +'<'+name+'> '+ '<2en> ' + abstract)
+               ffr.write(header + '<2en> ' +'<'+name+'> '+ abstract)
         fieldLabel = fields[3] #'S'
         if fieldLabel in d:
            header = id+' '+fieldLabel+str('\t')
@@ -148,13 +148,13 @@ def main(path, rows, absType):
            sentences = splitLongSentences(sentences)
            for sent in sentences:
                abstract = sent + str('\n')
-               fes.write(header +'<'+name+'> ' + '<2fr> '+ abstract)
+               fes.write(header + '<2fr> ' +'<'+name+'> '+ abstract)
            for sent in sentences:
                abstract = sent + str('\n')
-               fes.write(header +'<'+name+'> ' + '<2de> ' + abstract)
+               fes.write(header + '<2de> ' +'<'+name+'> '+ abstract)
            for sent in sentences:
                abstract = sent + str('\n')
-               fes.write(header +'<'+name+'> ' + '<2en> ' + abstract)
+               fes.write(header + '<2en> ' +'<'+name+'> '+ abstract)
         fes.close()     
         fen.close()     
         ffr.close()     
