@@ -1,4 +1,4 @@
-#Scripts for the evaluation of queries
+# Scripts for the evaluation of queries
 
 ## run\_evaluation.py
 - Usage: python3 run\_evaluation.py *path to source.la* _port of Solr instance_
