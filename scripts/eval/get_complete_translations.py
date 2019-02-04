@@ -59,27 +59,6 @@ class TransGetter:
                         self.search_for_translations(rest, original_string, add_whitespace)
                     else:
                         original_string = current_string.split(")")[0]
-                        # passed_loop = False
-                        # original_strings = list()
-                        # while " " in original_string:
-                        #     passed_loop = True
-                        #     first_original_string = original_string.strip()
-                        #     original_strings.append(dict())
-                        #     original_strings[0]["org"] = first_original_string
-                        #     to_skip += 1
-                        #     num_following_aus = 1
-                        #     next_string_org = parts[i+num_following_aus].split(")")[0]
-                        #     original_strings.append(dict())
-                        #     original_strings[num_following_aus]["org"] = next_string_org
-                        #     while " " in next_string_org:
-                        #         num_following_aus +=1
-                        #         next_string_org = parts[i+num_following_aus].split(")")[0]
-                        #         original_strings.append(dict())
-                        #         original_strings[num_following_aus]["org"] = next_string_org
-                        #     next_string = parts[i+num_following_aus].replace(next_string_org + ")", "")
-                        #
-                        #
-                        # if not passed_loop:
                         original += original_string
                         rest = current_string.replace(original + ")", "", 1)
                         self.search_for_translations(rest, original_string, add_whitespace)
