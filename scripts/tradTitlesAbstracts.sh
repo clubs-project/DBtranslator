@@ -64,6 +64,7 @@ elif [ $field == "abs" ]; then
    python3 preproAbst4trad.py $outPath $sizeDB $absType
 fi
 
+
 #: <<'END_COMMENT'
 # Extract text (with cuts) and normalise
 # (long list of commands because sentences in French behave different at the beginning)
@@ -72,7 +73,8 @@ for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do cut -f2 $i > $i.cu
    cat $i.cut | rev | cut -d">" -f2-  | rev > $i.labels; sed -i 's/$/>/' $i.labels;
    cat $i.cut | rev | cut -d">" -f1  | rev > $i.text; 
    cut -d'2' -f2- $i.cut | cut -d' ' -f1 > $i.tmp;  sed 's/^/<2/' $i.tmp > $i.2lang; perl $bins/normalize-punctuation.perl -l $j < $i.text > $i.norm; done; done;
-#for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do cut -f2 $i > $i.cut; cut -f1 $i > $i.head; cut -d'2' -f2- $i.cut | cut -d' ' -f1 > $i.tmp;  cut -d' ' -f3- $i.cut > $i.text;  cut -d' ' -f2 $i.cut > $i.2lang; perl $bins/normalize-punctuation.perl -l $j < $i.text > $i.norm; done; done;
+# prova a veure si ara funciona aixo
+# for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do cut -f2 $i > $i.cut; cut -f1 $i > $i.head; cut -d'2' -f2- $i.cut | cut -d' ' -f1 > $i.tmp;  cut -d' ' -f3- $i.cut > $i.text;  cut -d' ' -f1 $i.cut > $i.2lang; perl $bins/normalize-punctuation.perl -l $j < $i.text > $i.norm; done; done;
 
 # Tokenisation
 echo "Tokenising..."
@@ -84,14 +86,9 @@ echo "Truecasing..."
 for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do perl $bins/truecase.perl --model $models/modelTC.EpWP.$j < $i.tok > $i.tc; done; done;
 rm $outPath/*/*.norm
 
-# Patch while joining versions
-for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do cut -d' ' -f1 $i.labels > $i.lab1; cut -d' ' -f2 $i.labels > $i.lab2; paste -d' ' $i.lab2 $i.lab1 $i.tc > $i.tc2; done; done;
-
 # Cleaning
 find . -size 0 -delete
-# CRIS: a substituir pel patch
-rm $outPath/*/*.lab?
-#for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do paste -d' ' $i.labels $i.tc > $i.tc2; done; done;
+for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do paste -d' ' $i.labels $i.tc > $i.tc2; done; done;
 rm $outPath/*/*.tok
 for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do mv $i.tc2 $i.tc; done; done;
 
@@ -117,8 +114,8 @@ for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do sed 's/\@\@ //g' $
 # Cleaning and upload format?
 for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do paste $i.head $i.2lang $i.trad1 > $i.trad; done; done;
 find . -size 0 -delete
-#rm $outPath/*/*.tc $outPath/*/*.bpe $outPath/*/*.trad1 $outPath/*/*.trad2
-#rm $outPath/*/*.2lang $outPath/*/*.labels $outPath/*/*.head
+rm $outPath/*/*.tc $outPath/*/*.bpe $outPath/*/*.trad1 $outPath/*/*.trad2
+rm $outPath/*/*.2lang $outPath/*/*.labels $outPath/*/*.head
 
 # In case of abstract translation, abstracts must be reconstructed
 if [ $field == "abs" ]; then
