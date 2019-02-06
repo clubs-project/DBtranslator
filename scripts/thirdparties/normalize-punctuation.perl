@@ -18,6 +18,7 @@ while (@ARGV) {
 }
 
 while(<STDIN>) {
+    chomp;
     # remove non-printing characters
     #s/\p{C}/ /g;
     s/\r//g;
@@ -71,7 +72,7 @@ while(<STDIN>) {
     s/ +/ /g;
     s/^ +//;
 
- s/，/,/g;
+  s/，/,/g;
   s/。 */. /g;
   s/、/,/g;
   s/”/"/g;
@@ -129,5 +130,5 @@ while(<STDIN>) {
     else {
 	s/(\d) (\d)/$1.$2/g;
     }
-    print $_;
+    print "$_\n";
 }
