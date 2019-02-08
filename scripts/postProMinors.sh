@@ -22,6 +22,18 @@ sed -i "s/^s '/s'/g" $FILE
 sed -i "s/ n '/ n'/g" $FILE
 sed -i "s/^n '/n'/g" $FILE
 
+sed -i "s/ c' / c'/g" $FILE
+sed -i "s/^c' /c'/g" $FILE
+sed -i "s/qu' /qu'/g" $FILE
+sed -i "s/ l' / l'/g" $FILE
+sed -i "s/^l' /l'/g" $FILE
+sed -i "s/ d' / d'/g" $FILE
+sed -i "s/^d' /d'/g" $FILE
+sed -i "s/ s' / s'/g" $FILE
+sed -i "s/^s' /s'/g" $FILE
+sed -i "s/ n' / n'/g" $FILE
+sed -i "s/^n' /n'/g" $FILE
+
 # Unacceptable mistakes
 sed -i "s/© Derecho/© Copyright/g" $FILE
 sed -i "s/Derecho (/Copyright (/g" $FILE
