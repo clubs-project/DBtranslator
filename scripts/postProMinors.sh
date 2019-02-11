@@ -62,12 +62,12 @@ sed -i "s/^N' /N'/g" $FILE
 sed -i "s/ 's /'s /g" $FILE
 
 # Broken entities
-sed -i -e "s/& amp;/\&/g" */titles.??.trad
-sed -i -e "s/& gt;/>/g" */titles.??.trad
-sed -i -e "s/& lt;/</g" */titles.??.trad
-sed -i -e "s/& Amp;/\&/g" */titles.??.trad
-sed -i -e "s/& Gt;/>/g" */titles.??.trad
-sed -i -e 's/& quot;/\"/g' */titles.??.trad
+sed -i -e "s/& amp;/\&/g"  $FILE
+sed -i -e "s/& gt;/>/g"  $FILE
+sed -i -e "s/& lt;/</g"  $FILE
+sed -i -e "s/& Amp;/\&/g" $FILE
+sed -i -e "s/& Gt;/>/g"  $FILE
+sed -i -e 's/& quot;/\"/g'  $FILE
 
 
 # Unacceptable mistakes
