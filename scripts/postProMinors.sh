@@ -34,6 +34,42 @@ sed -i "s/^s' /s'/g" $FILE
 sed -i "s/ n' / n'/g" $FILE
 sed -i "s/^n' /n'/g" $FILE
 
+sed -i "s/ C '/ C'/g" $FILE
+sed -i "s/^C '/C'/g" $FILE
+sed -i "s/Qu '/Qu'/g" $FILE
+sed -i "s/ L '/ L'/g" $FILE
+sed -i "s/^L '/L'/g" $FILE
+sed -i "s/ D '/ D'/g" $FILE
+sed -i "s/^D '/D'/g" $FILE
+sed -i "s/ S '/ S'/g" $FILE
+sed -i "s/^S '/S'/g" $FILE
+sed -i "s/ N '/ N'/g" $FILE
+sed -i "s/^N '/N'/g" $FILE
+
+sed -i "s/ C' / C'/g" $FILE
+sed -i "s/^C' /C'/g" $FILE
+sed -i "s/Qu' /Qu'/g" $FILE
+sed -i "s/ L' / L'/g" $FILE
+sed -i "s/^L' /L'/g" $FILE
+sed -i "s/ D' / D'/g" $FILE
+sed -i "s/^D' /D'/g" $FILE
+sed -i "s/ S' / S'/g" $FILE
+sed -i "s/^S' /S'/g" $FILE
+sed -i "s/ N' / N'/g" $FILE
+sed -i "s/^N' /N'/g" $FILE
+
+#saxon genitive
+sed -i "s/ 's /'s /g" $FILE
+
+# Broken entities
+sed -i -e "s/& amp;/\&/g" */titles.??.trad
+sed -i -e "s/& gt;/>/g" */titles.??.trad
+sed -i -e "s/& lt;/</g" */titles.??.trad
+sed -i -e "s/& Amp;/\&/g" */titles.??.trad
+sed -i -e "s/& Gt;/>/g" */titles.??.trad
+sed -i -e 's/& quot;/\"/g' */titles.??.trad
+
+
 # Unacceptable mistakes
 sed -i "s/© Derecho/© Copyright/g" $FILE
 sed -i "s/Derecho (/Copyright (/g" $FILE
