@@ -81,9 +81,17 @@ echo "Tokenising..."
 for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do perl $bins/tokenizer.perl -q -x -threads $threads -no-escape -l $j < $i.norm > $i.tok; done; done;
 rm $outPath/*/*.cut  $outPath/*/*.tmp $outPath/*/*.text
 
-# Truecasing
-echo "Truecasing..."
 for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do perl $bins/truecase.perl --model $models/modelTC.EpWP.$j < $i.tok > $i.tc; done; done;
+if [ $field == "tit" ]; then
+   # Lowercasing: lots of titles ar fully capitalised (although this is not taken into account in training)
+   echo "Lowercasing..."
+   for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do tr '[:upper:]' '[:lower:]' < $i.tok > $i.tc; done; done;
+elif [ $field == "abs" ]; then
+   # Truecasing
+   echo "Truecasing..."
+   for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do perl $bins/truecase.perl --model $models/modelTC.EpWP.$j < $i.tok >
+ $i.tc; done; done;
+fi
 rm $outPath/*/*.norm
 
 # Cleaning
@@ -109,7 +117,7 @@ find . -size 0 -delete
 
 # de-BPE and de-tokenise
 echo "Reconstructing translations..."
-for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do sed 's/\@\@ //g' $i.trad.bpe > $i.trad2; perl $bins/detokenizer.perl -q -u -l $j < $i.trad2 > $i.trad1; bash postProMinors.sh $i.trad; done; done;
+for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do sed 's/\@\@ //g' $i.trad.bpe > $i.trad2; perl $bins/detokenizer.perl -q -u -l $j < $i.trad2 > $i.trad1; bash postProMinors.sh $i.trad1; done; done;
 
 # Cleaning and upload format?
 for j in "en" "de" "fr" "es"; do for i in $outPath/*/*.$j; do paste $i.head $i.2lang $i.trad1 > $i.trad; done; done;
