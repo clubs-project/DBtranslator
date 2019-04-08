@@ -61,6 +61,24 @@ perl multi-bleu.perl translatedQueriesManual/done/target-from-es-to-fr.bleu < se
 echo "From es to fr without stopwords:" >> bleu-results.txt
 perl multi-bleu.perl translatedQueriesManual/done/target-from-es-to-fr-sw.bleu < server_results/mesh_4_lex_wikidata/target_qfr-from-es-to-fr-sw.bleu >> bleu-results.txt
 
+# None source
+echo "From none to de with stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-de.bleu < server_results/mesh_4_lex_wikidata/target_qfr-from-none-to-de.bleu >> bleu-results.txt
+echo "From none to de without stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-de-sw.bleu < server_results/mesh_4_lex_wikidata/target_qfr-from-none-to-de-sw.bleu >> bleu-results.txt
+echo "From none to en with stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-en.bleu < server_results/mesh_4_lex_wikidata/target_qfr-from-none-to-en.bleu >> bleu-results.txt
+echo "From none to en without stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-en-sw.bleu < server_results/mesh_4_lex_wikidata/target_qfr-from-none-to-en-sw.bleu >> bleu-results.txt
+echo "From none to fr with stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-fr.bleu < server_results/mesh_4_lex_wikidata/target_qfr-from-none-to-fr.bleu >> bleu-results.txt
+echo "From none to fr without stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-fr-sw.bleu < server_results/mesh_4_lex_wikidata/target_qfr-from-none-to-fr-sw.bleu >> bleu-results.txt
+echo "From none to es with stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-es.bleu < server_results/mesh_4_lex_wikidata/target_qfr-from-none-to-es.bleu >> bleu-results.txt
+echo "From none to es without stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-es-sw.bleu < server_results/mesh_4_lex_wikidata/target_qfr-from-none-to-es-sw.bleu >> bleu-results.txt
+
 
 # Mesh
 echo "\nResults of Mesh:" >> bleu-results.txt
@@ -121,6 +139,24 @@ perl multi-bleu.perl translatedQueriesManual/done/target-from-es-to-fr.bleu < se
 echo "From es to fr without stopwords:" >> bleu-results.txt
 perl multi-bleu.perl translatedQueriesManual/done/target-from-es-to-fr-sw.bleu < server_results/mesh/target_qfr-from-es-to-fr-sw.bleu >> bleu-results.txt
 
+# None source
+echo "From none to de with stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-de.bleu < server_results/mesh/target_qfr-from-none-to-de.bleu >> bleu-results.txt
+echo "From none to de without stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-de-sw.bleu < server_results/mesh/target_qfr-from-none-to-de-sw.bleu >> bleu-results.txt
+echo "From none to en with stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-en.bleu < server_results/mesh/target_qfr-from-none-to-en.bleu >> bleu-results.txt
+echo "From none to en without stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-en-sw.bleu < server_results/mesh/target_qfr-from-none-to-en-sw.bleu >> bleu-results.txt
+echo "From none to fr with stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-fr.bleu < server_results/mesh/target_qfr-from-none-to-fr.bleu >> bleu-results.txt
+echo "From none to fr without stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-fr-sw.bleu < server_results/mesh/target_qfr-from-none-to-fr-sw.bleu >> bleu-results.txt
+echo "From none to es with stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-es.bleu < server_results/mesh/target_qfr-from-none-to-es.bleu >> bleu-results.txt
+echo "From none to es without stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-es-sw.bleu < server_results/mesh/target_qfr-from-none-to-es-sw.bleu >> bleu-results.txt
+
 # 4lex_diff
 echo "\nResults of the quadrilingual dictionary (diff version):" >> bleu-results.txt
 
@@ -179,6 +215,24 @@ echo "From es to fr with stopwords:" >> bleu-results.txt
 perl multi-bleu.perl translatedQueriesManual/done/target-from-es-to-fr.bleu < server_results/4lex_diff/target_qfr-from-es-to-fr.bleu >> bleu-results.txt
 echo "From es to fr without stopwords:" >> bleu-results.txt
 perl multi-bleu.perl translatedQueriesManual/done/target-from-es-to-fr-sw.bleu < server_results/4lex_diff/target_qfr-from-es-to-fr-sw.bleu >> bleu-results.txt
+
+# None source
+echo "From none to de with stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-de.bleu < server_results/4lex_diff/target_qfr-from-none-to-de.bleu >> bleu-results.txt
+echo "From none to de without stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-de-sw.bleu < server_results/4lex_diff/target_qfr-from-none-to-de-sw.bleu >> bleu-results.txt
+echo "From none to en with stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-en.bleu < server_results/4lex_diff/target_qfr-from-none-to-en.bleu >> bleu-results.txt
+echo "From none to en without stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-en-sw.bleu < server_results/4lex_diff/target_qfr-from-none-to-en-sw.bleu >> bleu-results.txt
+echo "From none to fr with stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-fr.bleu < server_results/4lex_diff/target_qfr-from-none-to-fr.bleu >> bleu-results.txt
+echo "From none to fr without stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-fr-sw.bleu < server_results/4lex_diff/target_qfr-from-none-to-fr-sw.bleu >> bleu-results.txt
+echo "From none to es with stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-es.bleu < server_results/4lex_diff/target_qfr-from-none-to-es.bleu >> bleu-results.txt
+echo "From none to es without stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-es-sw.bleu < server_results/4lex_diff/target_qfr-from-none-to-es-sw.bleu >> bleu-results.txt
 
 # 4lex_non_diff
 echo "\nResults of the quadrilingual dictionary (non-diff version):" >> bleu-results.txt
@@ -239,6 +293,24 @@ perl multi-bleu.perl translatedQueriesManual/done/target-from-es-to-fr.bleu < se
 echo "From es to fr without stopwords:" >> bleu-results.txt
 perl multi-bleu.perl translatedQueriesManual/done/target-from-es-to-fr-sw.bleu < server_results/4lex_non_diff/target_qfr-from-es-to-fr-sw.bleu >> bleu-results.txt
 
+# None source
+echo "From none to de with stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-de.bleu < server_results/4lex_non_diff/target_qfr-from-none-to-de.bleu >> bleu-results.txt
+echo "From none to de without stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-de-sw.bleu < server_results/4lex_non_diff/target_qfr-from-none-to-de-sw.bleu >> bleu-results.txt
+echo "From none to en with stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-en.bleu < server_results/4lex_non_diff/target_qfr-from-none-to-en.bleu >> bleu-results.txt
+echo "From none to en without stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-en-sw.bleu < server_results/4lex_non_diff/target_qfr-from-none-to-en-sw.bleu >> bleu-results.txt
+echo "From none to fr with stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-fr.bleu < server_results/4lex_non_diff/target_qfr-from-none-to-fr.bleu >> bleu-results.txt
+echo "From none to fr without stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-fr-sw.bleu < server_results/4lex_non_diff/target_qfr-from-none-to-fr-sw.bleu >> bleu-results.txt
+echo "From none to es with stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-es.bleu < server_results/4lex_non_diff/target_qfr-from-none-to-es.bleu >> bleu-results.txt
+echo "From none to es without stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-es-sw.bleu < server_results/4lex_non_diff/target_qfr-from-none-to-es-sw.bleu >> bleu-results.txt
+
 # wikidata_diff
 echo "\nResults of the wikidata dictionary (diff version):" >> bleu-results.txt
 
@@ -298,6 +370,24 @@ perl multi-bleu.perl translatedQueriesManual/done/target-from-es-to-fr.bleu < se
 echo "From es to fr without stopwords:" >> bleu-results.txt
 perl multi-bleu.perl translatedQueriesManual/done/target-from-es-to-fr-sw.bleu < server_results/wikidata_diff/target_qfr-from-es-to-fr-sw.bleu >> bleu-results.txt
 
+# None source
+echo "From none to de with stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-de.bleu < server_results/wikidata_diff/target_qfr-from-none-to-de.bleu >> bleu-results.txt
+echo "From none to de without stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-de-sw.bleu < server_results/wikidata_diff/target_qfr-from-none-to-de-sw.bleu >> bleu-results.txt
+echo "From none to en with stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-en.bleu < server_results/wikidata_diff/target_qfr-from-none-to-en.bleu >> bleu-results.txt
+echo "From none to en without stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-en-sw.bleu < server_results/wikidata_diff/target_qfr-from-none-to-en-sw.bleu >> bleu-results.txt
+echo "From none to fr with stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-fr.bleu < server_results/wikidata_diff/target_qfr-from-none-to-fr.bleu >> bleu-results.txt
+echo "From none to fr without stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-fr-sw.bleu < server_results/wikidata_diff/target_qfr-from-none-to-fr-sw.bleu >> bleu-results.txt
+echo "From none to es with stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-es.bleu < server_results/wikidata_diff/target_qfr-from-none-to-es.bleu >> bleu-results.txt
+echo "From none to es without stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-es-sw.bleu < server_results/wikidata_diff/target_qfr-from-none-to-es-sw.bleu >> bleu-results.txt
+
 # wikidata_non_diff
 echo "\nResults of the wikidata dictionary (non-diff version):" >> bleu-results.txt
 
@@ -356,3 +446,21 @@ echo "From es to fr with stopwords:" >> bleu-results.txt
 perl multi-bleu.perl translatedQueriesManual/done/target-from-es-to-fr.bleu < server_results/wikidata_non_diff/target_qfr-from-es-to-fr.bleu >> bleu-results.txt
 echo "From es to fr without stopwords:" >> bleu-results.txt
 perl multi-bleu.perl translatedQueriesManual/done/target-from-es-to-fr-sw.bleu < server_results/wikidata_non_diff/target_qfr-from-es-to-fr-sw.bleu >> bleu-results.txt
+
+# None source
+echo "From none to de with stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-de.bleu < server_results/wikidata_non_diff/target_qfr-from-none-to-de.bleu >> bleu-results.txt
+echo "From none to de without stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-de-sw.bleu < server_results/wikidata_non_diff/target_qfr-from-none-to-de-sw.bleu >> bleu-results.txt
+echo "From none to en with stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-en.bleu < server_results/wikidata_non_diff/target_qfr-from-none-to-en.bleu >> bleu-results.txt
+echo "From none to en without stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-en-sw.bleu < server_results/wikidata_non_diff/target_qfr-from-none-to-en-sw.bleu >> bleu-results.txt
+echo "From none to fr with stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-fr.bleu < server_results/wikidata_non_diff/target_qfr-from-none-to-fr.bleu >> bleu-results.txt
+echo "From none to fr without stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-fr-sw.bleu < server_results/wikidata_non_diff/target_qfr-from-none-to-fr-sw.bleu >> bleu-results.txt
+echo "From none to es with stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-es.bleu < server_results/wikidata_non_diff/target_qfr-from-none-to-es.bleu >> bleu-results.txt
+echo "From none to es without stopwords:" >> bleu-results.txt
+perl multi-bleu.perl translatedQueriesManual/done/target-from-none-to-es-sw.bleu < server_results/wikidata_non_diff/target_qfr-from-none-to-es-sw.bleu >> bleu-results.txt
