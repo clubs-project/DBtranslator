@@ -77,28 +77,26 @@ public class ZpidQParser extends ExtendedDismaxQParser {
                             LOG.debug("Writing statistics to file: " + query.toString());
                             writer.write("Mesh usage word level: " + 
                                     Integer.toString(qfr.getMeshUsageWordLevel()) + "\n");
-                            writer.write("Mesh usage string level: " + 
-                                    Integer.toString(qfr.getMeshUsageStringLevel()) + "\n");
+                            writer.write("Mesh usage multi-token level: " + 
+                                    Integer.toString(qfr.getMeshUsageMultiTokenLevel()) + "\n");
                             writer.write("Mesh usage query level: " + 
                                     Integer.toString(qfr.getMeshUsageQueryLevel()) + "\n");
                             writer.write("Backoff usage word level: " + 
                                     Integer.toString(qfr.getBackoffUsageWordLevel()) + "\n");
-                            writer.write("Backoff usage string level: " + 
-                                    Integer.toString(qfr.getBackoffUsageStringLevel()) + "\n");
+                            writer.write("Backoff usage multi-token level: " + 
+                                    Integer.toString(qfr.getBackoffUsageMultiTokenLevel()) + "\n");
                             writer.write("Backoff usage query level: " + 
                                     Integer.toString(qfr.getBackoffUsageQueryLevel()) + "\n");
-                            writer.write("Number of entire copies at query level:" + 
-                                    Integer.toString(qfr.getNumEntireCopyQueryLevel()) + "\n");
-                            writer.write("Number of entire copies at string level: " + 
-                                    Integer.toString(qfr.getNumEntireCopyStringLevel()) + "\n");
-                            writer.write("Number of partial copies at string level: " + 
-                                    Integer.toString(qfr.getNumPartialCopyStringLevel()) + "\n");
+                            writer.write("Number of copies at query level:" + 
+                                    Integer.toString(qfr.getNumCopyQueryLevel()) + "\n");
+                            writer.write("Number of copies at multi-token level: " + 
+                                    Integer.toString(qfr.getNumCopyMultiTokenLevel()) + "\n");
                             writer.write("Number of copies at word level: " + 
                                     Integer.toString(qfr.getNumCopyWordLevel()) + "\n");
                             writer.write("Singular usage word level: " + 
                                     Integer.toString(qfr.getSingularUsageWordLevel()) + "\n");
-                            writer.write("Singular usage string level: " + 
-                                    Integer.toString(qfr.getSingularUsageStringLevel()) + "\n");
+                            writer.write("Singular usage multi-token level: " + 
+                                    Integer.toString(qfr.getSingularUsageMultiTokenLevel()) + "\n");
                             writer.write("Singular usage query level: " + 
                                     Integer.toString(qfr.getSingularUsageQueryLevel()) + "\n"); 
                         } catch (IOException ex) {

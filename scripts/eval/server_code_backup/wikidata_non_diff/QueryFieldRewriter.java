@@ -62,46 +62,43 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
     
     /* statistics for evaluation: 
          - number of times mesh is used at word level
-         - number of times mesh is used at string level 
+         - number of times mesh is used at multi-token string level 
             (whole string is found in Mesh)
          - number of times the whole query is translated using only mesh
          - number of times we need to use the low-quality dictionary (backoff) 
             at word level
          - number of times we need to use the low-quality dictionary (backoff) 
-            at string level
+            at multi-token string level
          - number of times the whole query is translated using only the 
             low-quality dictionary
          - number of times the whole query is just copied
-         - number of times the translation of a whole string is an entire copy
-         - number of times the translation of a whole string is partly a copy
-         - number of times words are copied (difference: if two of three tokens 
-            are copied, this counter is increased by 2, whereas isPartialCopy is 
-            increased by 1)
+         - number of times the translation of a wholemulti-token  string is an entire copy
+         - number of times words are copied 
          - number of times singular forms are used for the transla-
-            tion (for one string, each token-wise usage of a singular form is 
-            counted separately)
-         - number of strings where at least one singular form is used for the 
+            tion of a word
+         - number of multi-token strings where at least one singular form is used for the 
             translation
          - number of times the whole query is only translated with the help of 
             singular forms*/
     private int meshUsageWordLevel = 0;
-    private int meshUsageStringLevel = 0;
+    private int meshUsageMultiTokenLevel = 0;
     private int meshUsageQueryLevel = 0;
     private int backoffUsageWordLevel = 0;
-    private int backoffUsageStringLevel = 0;
+    private int backoffUsageMultiTokenLevel = 0;
     private int backoffUsageQueryLevel = 0;
-    private int entireCopyQueryLevel = 0;
-    private int entireCopyStringLevel = 0;
-    private int partialCopyStringLevel = 0;
+    private int copyQueryLevel = 0;
+    private int copyMultiTokenLevel = 0;
     private int copyWordLevel = 0;
     private int singularUsageWordLevel = 0;
-    private int singularUsageStringLevel = 0;
+    private int singularUsageMultiTokenLevel = 0;
     private int singularUsageQueryLevel = 0;
     
     private boolean meshAtQueryLevel = true;
     private boolean backoffAtQueryLevel = true;
-    private boolean entireCopyAtQueryLevel = true;
+    private boolean copyAtQueryLevel = true;
     private boolean singularAtQueryLevel = true;
+    private boolean singularAtMultiTokenLevel = true;
+    private boolean copyAtMultiTokenLevel = true;
 
     private boolean hasSeenFirstQuery = false;
 
@@ -111,12 +108,14 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
         readInFieldNames(pathToLaFieldNames);
     }
     
+    
+    /* methods needed for collecting the statistics for evaluation*/
     public int getMeshUsageWordLevel(){
         return meshUsageWordLevel;
     }
     
-    public int getMeshUsageStringLevel(){
-        return meshUsageStringLevel;
+    public int getMeshUsageMultiTokenLevel(){
+        return meshUsageMultiTokenLevel;
     }
     
     public int getMeshUsageQueryLevel(){
@@ -127,25 +126,21 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
         return backoffUsageWordLevel;
     }
     
-    public int getBackoffUsageStringLevel(){
-        return backoffUsageStringLevel;
+    public int getBackoffUsageMultiTokenLevel(){
+        return backoffUsageMultiTokenLevel;
     }
     
     public int getBackoffUsageQueryLevel(){
         return backoffUsageQueryLevel;
     }
     
-    public int getNumEntireCopyQueryLevel(){
-        return entireCopyQueryLevel;
+    public int getNumCopyQueryLevel(){
+        return copyQueryLevel;
     }
     
-    public int getNumEntireCopyStringLevel(){
-        return entireCopyStringLevel;
-    }
-    
-    public int getNumPartialCopyStringLevel(){
-        return partialCopyStringLevel;
-    }
+    public int getNumCopyMultiTokenLevel(){
+        return copyMultiTokenLevel;
+    }    
     
     public int getNumCopyWordLevel(){
         return copyWordLevel;
@@ -155,8 +150,8 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
         return singularUsageWordLevel;
     }
     
-    public int getSingularUsageStringLevel(){
-        return singularUsageStringLevel;
+    public int getSingularUsageMultiTokenLevel(){
+        return singularUsageMultiTokenLevel;
     }
     
     public int getSingularUsageQueryLevel(){
@@ -166,6 +161,8 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
     public void resetSeenStrings(){
         seenStrings = new HashSet<>();
     }
+    
+    /* methods for real functionality*/
 
     private void readInFieldNames(String pathToFieldNames) throws FileNotFoundException, IOException {
         /*Expected format of the file: 
@@ -308,6 +305,8 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
                 }
             }
         } else {
+            /* There doesn't exist any language-specific field name for this 
+            field. For instances, this is the case for "text". */
             if (translationMap.containsKey("de")) {
                 addDummyField(translationMap, field, fieldsAndTranslations, fieldNamesLASpecific, "de", "D");
             }
@@ -328,7 +327,7 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
         return new Translation(fieldsAndTranslations, fieldNamesLASpecific, field);
     }
 
-    public Boolean gatherTransInfo(String fieldName, String laFieldCode,
+    private Boolean gatherTransInfo(String fieldName, String laFieldCode,
             String laTransCode, Map<String, String> fieldsAndTranslations,
             Map<String, Boolean> fieldNamesLASpecific,
             Map<String, String> translationMap) {
@@ -387,7 +386,7 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
             else if (language.equals("de")) {
                 if (lengthPlural > 2) {
                     /* in contrast to tradQueries, we don't need to remove 
-                    umlauts here, because Solr already do the job for us*/
+                    umlauts here, because Solr already does the job for us*/
                     if (plural.endsWith("er")) {
                         return plural.substring(0, lengthPlural - 2);
                     }
@@ -404,63 +403,72 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
         return plural;
     }
     
-    private boolean checkNewString(String original){
+    /* for evaluation purposes only*/
+    private boolean checkNewString(String original, boolean addToSeenStrings){
         Boolean countInStats = true;
         if (seenStrings.contains(original)){
             countInStats = false;
         }
-        else {
+        else if (addToSeenStrings) {
             // false as dummy value
             seenStrings.add(original);
         }
         return countInStats;
     }
 
-    private Translation translateWholeString(String original, String field) {
+    private Translation translateWholeString(String original, String field, boolean addToSeenStrings) {
         LOG.debug("Translating string \"" + original + "\" , which is the value of field " + field);
-        boolean countInStats = checkNewString(original);
+        boolean countInStats = checkNewString(original, addToSeenStrings);
+        int lengthOriginal = original.split("\\s").length;
         
         if (mixedDict.containsKey(original)) {
             LOG.debug("The whole string is contained in the mixed dictionary.");
             if (countInStats){
                 LOG.debug("translateWholeString: \""+ original + "\" counts towards the statistics.");
-                backoffUsageStringLevel += 1;
+                if (lengthOriginal > 1){
+                    backoffUsageMultiTokenLevel += 1;
+                    }
+                else {
+                    backoffUsageWordLevel += 1;
+                }
+                copyAtQueryLevel = false;
                 meshAtQueryLevel = false;
                 singularAtQueryLevel = false;
-                entireCopyAtQueryLevel = false;
             } else {
                 LOG.debug("translateWholeString: \""+ original + "\" doesn't count towards the "
                         + "statistics.");
             }
-            
+            seenStrings.add(original);
             return matchFieldNamesAndTranslations(mixedDict.get(original),
                     field);
         }
         LOG.debug("No translation for whole string found.");
         return null;
     }
+    
+    private boolean checkSingular(String possibleSingular, String laCode, 
+            String token, boolean countInStats, boolean mesh, 
+            Map<String, Map<String, String>> translationByToken){
+        if (! mesh){
+            if (mixedDict.containsKey(possibleSingular)){
+                Map<String, String> translationMap = mixedDict.get(possibleSingular);
 
-	private boolean checkSingular(String possibleSingular, String laCode, 
-        String token, boolean countInStats, boolean isEntireCopy, 
-        Map<String, Map<String, String>> translationByToken){   
-        if (mixedDict.containsKey(possibleSingular)){
-            // TODO: ignore if source language is not laCode (and for other languages)
-                    Map<String, String> translationMap = mixedDict.get(possibleSingular);
-
-                    /* Check whether the source language is laCode to avoid 
-                    mistakes where the possible laCode singular form looks 
-                    like a word in another language.*/
-                    if (! translationMap.containsKey(laCode)){                        
-                        translationByToken.put(token, translationMap);
-                        if (countInStats){
-                            backoffUsageWordLevel += 1;
-                            singularUsageWordLevel += 1;
-                        }
-                        meshAtQueryLevel = false;
-                        isEntireCopy = false;
-                        return true;
+                /* Check whether the source language is laCode to avoid 
+                mistakes where the possible laCode singular form looks 
+                like a word in another language.*/
+                if (! translationMap.containsKey(laCode)){                        
+                    translationByToken.put(token, translationMap);
+                    if (countInStats){
+                        backoffUsageWordLevel += 1;
+                        singularUsageWordLevel += 1;
                     }
-        }        
+                    meshAtQueryLevel = false;
+                    copyAtMultiTokenLevel = false;
+                    copyAtQueryLevel = false;
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -480,7 +488,7 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
         }
         
         /* if seenStrings doesn't contain original yet, it will be added in translateWholeString*/
-        Translation wholeStringTranslation = translateWholeString(original, field);
+        Translation wholeStringTranslation = translateWholeString(original, field, true);
         if (wholeStringTranslation != null) {
             return wholeStringTranslation;
         }
@@ -495,12 +503,11 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
         String french = "";
         String spanish = "";
         
-        /* remember whether the whole string has been translated with the help 
-        of singular forms*/
-        boolean onlySingular = true;
-        boolean isEntireCopy = true;
-        boolean isPartialCopy = false;
-
+        /* remember whether the whole multi-token string has been translated with the help 
+        of singular forms/has just been copied*/
+        singularAtMultiTokenLevel = true;
+        copyAtMultiTokenLevel = true;
+        
         // get all token-wise translations
         for (String token : tokens) {
             if (mixedDict.containsKey(token)) {
@@ -509,8 +516,8 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
                 if (countInStats){
                     backoffUsageWordLevel += 1;
                 }
-                onlySingular = false;
-                isEntireCopy = false;
+                singularAtMultiTokenLevel = false;
+                copyAtMultiTokenLevel = false;
                 meshAtQueryLevel = false;
             } else {
                 // no translation available: try possible singular forms
@@ -520,34 +527,29 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
                 String possibleSingularFr = removePluralEnding(token, "fr");
                 String possibleSingularEs = removePluralEnding(token, "es");
 
-                 // look for possible singular forms in MixedDict, precedence EN > DE > FR > ES
+                // look for possible singular forms in mixedDict, precedence EN > DE > FR > ES
                 if (checkSingular(possibleSingularEn, "en", token, 
-                        countInStats, isEntireCopy, 
-                        translationByToken)){
+                        countInStats, false, translationByToken)){
                     LOG.debug("Found possible English singular form \"" + 
                             possibleSingularEn + "\" for token " + token + 
                             " in mixed dict.");
-                } else if (checkSingular(possibleSingularDe, "de", token, 
-                        countInStats, isEntireCopy,  
-                        translationByToken)){
+                } else if (checkSingular(possibleSingularDe, "de", token,
+                        countInStats, false, translationByToken)){
                     LOG.debug("Found possible German singular form \"" + 
                             possibleSingularDe + "\" for token " + token + 
                             " in mixed dict.");
                 } else if (checkSingular(possibleSingularFr, "fr", token, 
-                        countInStats, isEntireCopy, 
-                        translationByToken)){
+              countInStats, false, translationByToken)){
                     LOG.debug("Found possible French singular form \"" + 
                             possibleSingularFr + "\" for token " + token + 
                             " in mixed dict.");
                 } else if (checkSingular(possibleSingularEs, "es", token, 
-                        countInStats, isEntireCopy, 
-                        translationByToken)){
+                        countInStats, false, translationByToken)){
                     LOG.debug("Found possible Spanish singular form \"" + 
                             possibleSingularEs + "\" for token " + token + 
-                            " in mixed dict.");			
+                            " in mixed dict.");
                 } // singular forms are also not contained in one of the dicts: just copy the token
                 else {
-                    // TODO: implement counting for statistics
                     LOG.debug("No possible singular form is contained in any of the dicts. The token is now copied as its own translation into all languages.");
                     Map<String, String> dummyMap = new HashMap<>();
                     dummyMap.put("de", token);
@@ -555,8 +557,7 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
                     dummyMap.put("fr", token);
                     dummyMap.put("es", token);
                     translationByToken.put(token, dummyMap);
-                    onlySingular = false;
-                    isPartialCopy = true;
+                    singularAtMultiTokenLevel = false;                    
                     if (countInStats){
                         copyWordLevel += 1;
                     }
@@ -567,25 +568,24 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
         }
         
         if (countInStats){
-            if (isEntireCopy) {
-                entireCopyStringLevel += 1;
+            if (copyAtMultiTokenLevel) { 
+                /* Only increment if string consists of multiple tokens */
+                if (tokens.length > 1){
+                copyMultiTokenLevel += 1;
                 LOG.debug("Incremented number of entire copies at string:" + 
                         original + " for field: " + field);
-                seenStrings.add(original);
-                
-            } else if (isPartialCopy) {
-                partialCopyStringLevel += 1;
-                LOG.debug("Incremented number of partial copies at string:" + 
-                        original + " for field: " + field);
-                entireCopyAtQueryLevel = false;
+                }                
             } else {
-                entireCopyAtQueryLevel = false;
+                copyAtQueryLevel = false;
             }
 
-            if (onlySingular) {
-                singularUsageStringLevel += 1;
-                LOG.debug("Incremented number of singularUsageStringLevel at "
-                        + "string:" + original + " for field: " + field);
+            if (singularAtMultiTokenLevel) {
+                /* Only increment if string consists of multiple tokens */
+                if (tokens.length > 1) {
+                    singularUsageMultiTokenLevel += 1;
+                    LOG.debug("Incremented number of singularUsageStringLevel at "
+                            + "string:" + original + " for field: " + field);
+                }
             }
             else {
                 singularAtQueryLevel = false;
@@ -788,14 +788,15 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
                     String childStrings = transInfo.buildString().trim();
                     if (!childStrings.equals("")) {
 
+                        if (childStrings.split("\\s").length > 1){
                         /* Map<String, String> consists of (language-specific) field 
                         names as keys and corresponding translations as value.
                         The Boolean indicates whether these language-specific field 
                         names actually exist in the schema or if they are just dummy
-                        names (if a fi2eld, e.g. "text", doesn't have 
+                        names (if a field, e.g. "text", doesn't have 
                         language-specific field names, then storing a translation 
                         with the key "text" would overwrite the other translations)*/
-                        Translation translationOfWholeString = translateWholeString(childStrings, fieldName);
+                        Translation translationOfWholeString = translateWholeString(childStrings, fieldName, false);
 
                         /*it was possible to translate the whole string*/
                         if (translationOfWholeString != null) {
@@ -843,15 +844,23 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
                                     inBetween.addChildren(buildNewChildren(translationOfWholeString, oldChild.getType(), false, 0, null));
                                 }
                             }
-                            old.addChild(inBetween);
-                        } /* the tokens couldn't be translated as a whole -> 
-                        translate them token by token */ /* in this case, 
-                        children must be Phrase or TermQueries, since they 
-                        contain text */ else {
-                            for (Map.Entry<Integer, QueryNode> oldNodeEntry : transInfo.getOriginalNodesMap().entrySet()) {
-                                old.replaceChildAtIndex(oldNodeEntry.getKey(), translateQueryNode(oldNodeEntry.getValue()));
+                            old.addChild(inBetween);                        
+                            } /* the tokens couldn't be translated as a whole -> 
+                            translate them token by token */ /* in this case, 
+                            children must be Phrase or TermQueries, since they 
+                            contain text */ else {
+                                for (Map.Entry<Integer, QueryNode> oldNodeEntry : transInfo.getOriginalNodesMap().entrySet()) {
+                                    old.replaceChildAtIndex(oldNodeEntry.getKey(), translateQueryNode(oldNodeEntry.getValue()));
+                                }
                             }
                         }
+                        else{
+                            // there is only one token
+                            for (Map.Entry<Integer, QueryNode> oldNodeEntry : transInfo.getOriginalNodesMap().entrySet()) {
+                                    old.replaceChildAtIndex(oldNodeEntry.getKey(), translateQueryNode(oldNodeEntry.getValue()));
+                            }
+                        }
+                    
                     } else {
                         /* there are no tokens -> traverse the tree downwards */
                         for (Map.Entry<Integer, QueryNode> oldNodeEntry : transInfo.getOriginalNodesMap().entrySet()) {
@@ -910,16 +919,28 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
                         }
 
                         String wholeString = sb.toString();
+                        Boolean countInStats = true;
+                        if (seenStrings.contains(wholeString)){
+                            countInStats = false;
+                        }
+                        seenStrings.add(wholeString);
                         LOG.debug("Whole string of group: " + wholeString);
                         if (mixedDict.containsKey(wholeString)) {
                             Map<String, String> translationMap = mixedDict.get(wholeString);
                             LOG.debug("Found translation for whole string "
                                     + "of group in the backoff dict.");
+                            if (countInStats){
+                                meshAtQueryLevel = false;
+                                copyAtQueryLevel = false;
+                                singularAtQueryLevel = false;
+                                backoffUsageMultiTokenLevel += 1;
+                            }
                             translateGroup(representative, nodesOfSameGroup,
                                     translationMap, disjunctionMaxQueries, idsOfDMQs);
                         } else{
                             LOG.debug("No translation for whole string of "
                                     + "group found.");
+                            //TODO: remember that string could not be transöated as a whole
                         }
 
                     }
@@ -946,7 +967,9 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
             }
             case DISJUNCTIONMAX: {
                 List<QueryNode> newChildren = new ArrayList<>();
-                for (QueryNode child : old.getChildren()) {
+                List<QueryNode> oldChildren = old.getChildren();
+                for (int i = 0; i < oldChildren.size(); i++) {
+                    QueryNode child = oldChildren.get(i);
                     /* check whether child has to be translated*/
                     if (!child.hasToBeTranslated()) {
                         continue;
@@ -956,8 +979,17 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
                     switch (childType) {
                         case BOOLEAN:
                         case DISJUNCTIONMAX:
-                            // translate the node on its own if its a BooleanQuery or a DisjunctionMaxQuery
-                            newChildren.add(translateQueryNode(child));
+                            /* translate the node on its own if it's a 
+                            BooleanQuery or a DisjunctionMaxQuery*/
+                            /* version in evaluation:
+                            //newChildren.add(translateQueryNode(child));*/
+                            /*Changed after evaluation since in this case the 
+                            structure of child is changed
+                             -> remove child from old's children list, 
+                            because otherwise the original and the modified 
+                            version will both be contained in the children list
+                            */                            
+                            old.replaceChildAtIndex(i, translateQueryNode(child));
                             break;
                         case BOOST: {
                             LOG.debug("Found BoostQuery: " + child.buildQuery().toString());
@@ -1146,7 +1178,7 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
                             } else {
                                 /* we don't have a QueryNode with that boost yet*/
 
- /* set up the identification maps */
+                                /* set up the identification maps */
                                 Map<String, QueryNode> newInnerMap = new HashMap<>();
                                 newInnerMap.put(fieldName, child);
                                 identificationMapForBoostQueries.put(boost, newInnerMap);
@@ -1253,6 +1285,11 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
                         QueryNode wrappedQuery = buildNewChild(typeOfWrappedQuery,
                                 translationFieldName, translationString, null);
                         newNode.addChild(wrappedQuery);
+                        /* Setting the occurrence level has been added after 
+                        the experiments for the evaluation have been performed. 
+                        I just noticed that this has been missing when writing 
+                        the internal documentation.*/
+                        newNode.setOccurrenceLevel(BooleanClause.Occur.SHOULD);
                         newNodes.add(newNode);
                     }
                     break;
@@ -1284,7 +1321,6 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
         if (toSimplify.getType().equals(QueryNode.QueryType.BOOLEAN)) {
             List<QueryNode> oldChildren = toSimplify.getChildren();
             List<Integer> indicesOfChildrenToRemove = new ArrayList<>();
-            List<QueryNode> newChildren = new ArrayList<>();
             if (oldChildren.size() > 1) {
                 Map<Integer, QueryNode> compulsoryBooleanChildren = new HashMap<>();
                 for (int i = 0; i < oldChildren.size(); i++) {
@@ -1336,17 +1372,19 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
         return toSimplify;
     }
     
-    /* needed for the tests*/
+    /* needed for the evaluation*/
     public void setHasSeenFirstQuery(){
         hasSeenFirstQuery = true;
     }
     
+    /* needed for the evaluation*/
     public boolean hasSeenFstQuery(){
         return hasSeenFirstQuery;
     }
     
+    /* needed for the evaluation*/
     private void resetAllQueryLevelBits(){
-        entireCopyAtQueryLevel = true;
+        copyAtQueryLevel = true;
         singularAtQueryLevel = true;
         meshAtQueryLevel = true;
         backoffAtQueryLevel = true;
@@ -1362,10 +1400,21 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
                 
 
         
-        if (entireCopyAtQueryLevel){
-            entireCopyQueryLevel += 1;
+        /* Numbers that can't be incremented together:
+        - copyQueryLevel and one of (singularUsageQueryLevel, 
+        meshUsageQueryLevel, backoffUsageQueryLevel)
+        - meshUsageQueryLevel and backoffUsageQueryLevel
+        */
+        if (copyAtQueryLevel){
+            copyQueryLevel += 1;
         } else if (singularAtQueryLevel){
             singularUsageQueryLevel += 1;
+            if (meshAtQueryLevel) {
+                meshUsageQueryLevel += 1;
+            }
+            else if (backoffAtQueryLevel){
+                backoffUsageQueryLevel += 1;
+            }
         } else if (meshAtQueryLevel){
             meshUsageQueryLevel += 1;
         } else if (backoffAtQueryLevel){

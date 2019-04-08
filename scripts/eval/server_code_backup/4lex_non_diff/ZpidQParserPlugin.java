@@ -29,7 +29,7 @@ public class ZpidQParserPlugin extends QParserPlugin {
         LOG.debug("Added LAFieldRewriter");
         try {            
             String mixedDict = "queryfieldrewriter/wp.WPcat.untradDEallkeys.dic"
-                    + "tkeys.solr.non-diff.all-languages.txt";
+                    + "tkeys.solr.diff.all-languages.txt";
             String laFieldNamesFile = "queryfieldrewriter/language_specific_fie"
                     + "ld_names.txt";
             FieldRewriterList.add(new QueryFieldRewriter(mixedDict, 
