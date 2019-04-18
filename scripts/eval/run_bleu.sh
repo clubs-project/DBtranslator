@@ -1,5 +1,5 @@
 #!/bin/sh
-
+rm -rf bleu-results.txt &&
 touch bleu-results.txt &&
 
 # Mesh_4_lex_wikidata
