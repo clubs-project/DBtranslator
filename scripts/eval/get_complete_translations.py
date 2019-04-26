@@ -1,9 +1,11 @@
 import re
+import argparse
 import sys
 import logging
 
+
 class TransGetter:
-    def __init__(self, trans_path):
+    def __init__(self, trans_path, source_language):
         self.path_to_translations = trans_path
         self.re_german = re.compile('(?<=TI_D:)[^)T]+')
         self.re_english = re.compile('(?<=TI_E:)[^)T]+')
@@ -15,28 +17,31 @@ class TransGetter:
         self.english_is_real_translation = False
         self.french_is_real_translation = False
         self.spanish_is_real_translation = False
-        self.german = ""
-        self.english = ""
-        self.french = ""
-        self.spanish = ""
+        self.german = []
+        self.english = []
+        self.french = []
+        self.spanish = []
+        self.source_language = source_language
 
     def read_in(self):
         with open(self.path_to_translations, 'r') as f:
-            #counter = 0
+            counter = 0
             for line in f:
-            #    counter += 1
-            #    if counter == 13:
-            #        print("Bla")
+                counter += 1
+                if counter == 1:
+                    print("Bla")
+                if counter == 50:
+                    print("Blo")
                 self.german_is_real_translation = False
                 self.english_is_real_translation = False
                 self.french_is_real_translation = False
                 self.spanish_is_real_translation = False
                 query_translations = dict()
                 original = ""
-                self.german = ""
-                self.english = ""
-                self.french = ""
-                self.spanish = ""
+                self.german = []
+                self.english = []
+                self.french = []
+                self.spanish = []
                 parts = line.split("AU:")
                 add_whitespace = False
                 #to_skip = 0
@@ -56,25 +61,25 @@ class TransGetter:
                         original += original_string
                         rest = current_string.replace(original, "", 1)
 
-                        self.search_for_translations(rest, original_string, add_whitespace)
+                        self.search_for_translations(rest, original_string, counter)
                     else:
                         original_string = current_string.split(")")[0]
                         original += original_string
                         rest = current_string.replace(original + ")", "", 1)
-                        self.search_for_translations(rest, original_string, add_whitespace)
+                        self.search_for_translations(rest, original_string, counter)
                 no_real_translation = True
                 if self.german_is_real_translation:
                     no_real_translation = False
-                    query_translations["de"] = self.german
+                    query_translations["de"] = " ".join(self.german)
                 if self.english_is_real_translation:
                     no_real_translation = False
-                    query_translations["en"] = self.english
+                    query_translations["en"] = " ".join(self.english)
                 if self.french_is_real_translation:
                     no_real_translation = False
-                    query_translations["fr"] = self.french
+                    query_translations["fr"] = " ".join(self.french)
                 if self.spanish_is_real_translation:
                     no_real_translation = False
-                    query_translations["es"] = self.spanish
+                    query_translations["es"] = " ".join(self.spanish)
 
                 if no_real_translation:
                     query_translations["org"] = original
@@ -82,32 +87,163 @@ class TransGetter:
                 self.translations.append(query_translations)
 
     @staticmethod
-    def search_for_translation(rest_string, regex, la_string, org_string, add_whitespace):
-        is_real_translation = False
-        if add_whitespace:
-            la_string += " "
+    def search_for_translation(rest_string, regex, collection_to_append):
         if regex.search(rest_string):
             # strip because the regex also matches trailing whitespace since it could also be whitespace
             # in a phrase
-            la_string += regex.search(rest_string).group().strip()
-            is_real_translation = True
-        else:
-            la_string += org_string
-        return la_string, is_real_translation
+            la_string = " ".join(regex.findall(rest_string))
+            collection_to_append.append(la_string)
+            return True
+        return False
 
-    def search_for_translations(self, rest_string, org_string, add_whitespace):
-        self.german, current_german_is_real_trans = self.search_for_translation(rest_string, self.re_german, self.german,
-                                                                      org_string, add_whitespace)
-        self.german_is_real_translation = self.german_is_real_translation | current_german_is_real_trans
-        self.english, current_english_is_real_trans = self.search_for_translation(rest_string, self.re_english, self.english,
-                                                                       org_string, add_whitespace)
-        self.english_is_real_translation = self.english_is_real_translation | current_english_is_real_trans
-        self.french, current_french_is_real_trans = self.search_for_translation(rest_string, self.re_french, self.french,
-                                                                      org_string, add_whitespace)
-        self.french_is_real_translation = self.french_is_real_translation | current_french_is_real_trans
-        self.spanish, current_spanish_is_real_trans = self.search_for_translation(rest_string, self.re_spanish, self.spanish,
-                                                                       org_string, add_whitespace)
-        self.spanish_is_real_translation = self.spanish_is_real_translation | current_spanish_is_real_trans
+    def check_source_language(self, la_code, current_is_real_trans):
+        wrong_source_language = False
+        if self.source_language == la_code and current_is_real_trans:
+            wrong_source_language = True
+        if la_code == "de":
+            self.german_is_real_translation = self.german_is_real_translation | current_is_real_trans
+        elif la_code == "en":
+            self.english_is_real_translation = self.english_is_real_translation | current_is_real_trans
+        elif la_code == "fr":
+            self.french_is_real_translation = self.french_is_real_translation | current_is_real_trans
+        elif la_code == "es":
+            self.spanish_is_real_translation = self.spanish_is_real_translation | current_is_real_trans
+        else:
+            logging.warn("Invalid language code:", la_code)
+        return wrong_source_language
+
+    def search_for_translations(self, rest_string, org_string, counter):
+        wrong_source_language = False
+        current_german_is_real_trans = self.search_for_translation(rest_string, self.re_german, self.german)
+        wrong_source_language = wrong_source_language | self.check_source_language("de", current_german_is_real_trans)
+
+        current_english_is_real_trans = self.search_for_translation(rest_string, self.re_english, self.english)
+        wrong_source_language = wrong_source_language | self.check_source_language("en", current_english_is_real_trans)
+
+        current_french_is_real_trans = self.search_for_translation(rest_string, self.re_french, self.french)
+        wrong_source_language = wrong_source_language | self.check_source_language("fr", current_french_is_real_trans)
+
+        current_spanish_is_real_trans = self.search_for_translation(rest_string, self.re_spanish, self.spanish)
+        wrong_source_language = wrong_source_language | self.check_source_language("es", current_spanish_is_real_trans)
+
+        # if there is no real translation at all, org_string should be copied (this is needed for cases where a
+        # translation consists of less tokens than the source)
+        if not current_german_is_real_trans and not current_english_is_real_trans and not current_french_is_real_trans and not current_spanish_is_real_trans:
+            self.german.append(org_string)
+            self.english.append(org_string)
+            self.french.append(org_string)
+            self.spanish.append(org_string)
+        elif wrong_source_language:
+            self.add_copy_to_wrong_source_language(current_german_is_real_trans, current_english_is_real_trans,
+                                                   current_french_is_real_trans, current_spanish_is_real_trans,
+                                                   org_string, rest_string, counter)
+
+
+    def add_copy_to_wrong_source_language(self, current_german_is_real_trans, current_english_is_real_trans,
+                                          current_french_is_real_trans, current_spanish_is_real_trans, org_string,
+                                          rest_string, counter):
+        first_la_is_real_trans = None
+        second_la_is_real_trans = None
+        third_la_is_real_trans = None
+        first_la_collection = None
+        second_la_collection = None
+        third_la_collection = None
+        first_name = ""
+        second_name = ""
+        third_name = ""
+
+        # English source
+        if self.source_language == "en":
+            first_la_is_real_trans = current_german_is_real_trans
+            second_la_is_real_trans = current_french_is_real_trans
+            third_la_is_real_trans = current_spanish_is_real_trans
+            first_la_collection = self.german
+            second_la_collection = self.french
+            third_la_collection = self.spanish
+            first_name = "German"
+            second_name = "French"
+            third_name = "Spanish"
+
+        # German source
+        elif self.source_language == "de":
+            first_la_is_real_trans = current_english_is_real_trans
+            second_la_is_real_trans = current_french_is_real_trans
+            third_la_is_real_trans = current_spanish_is_real_trans
+            first_la_collection = self.english
+            second_la_collection = self.french
+            third_la_collection = self.spanish
+            first_name = "English"
+            second_name = "French"
+            third_name = "Spanish"
+
+        # French source
+        elif self.source_language == "fr":
+            first_la_is_real_trans = current_english_is_real_trans
+            second_la_is_real_trans = current_german_is_real_trans
+            third_la_is_real_trans = current_spanish_is_real_trans
+            first_la_collection = self.english
+            second_la_collection = self.german
+            third_la_collection = self.spanish
+            first_name = "English"
+            second_name = "German"
+            third_name = "Spanish"
+
+        # Spanish source
+        else:
+            first_la_is_real_trans = current_english_is_real_trans
+            second_la_is_real_trans = current_german_is_real_trans
+            third_la_is_real_trans = current_french_is_real_trans
+            first_la_collection = self.english
+            second_la_collection = self.german
+            third_la_collection = self.french
+            first_name = "English"
+            second_name = "German"
+            third_name = "French"
+
+        # Find out which language was mistakenly taken to be the source language
+        if first_la_is_real_trans:
+            if second_la_is_real_trans:
+                if third_la_is_real_trans:
+                    logging.warn("Line ", counter, ": There seem to be translations in all languages:", org_string,
+                                 rest_string)
+                else:
+                    # the system wrongly assumed the third language to be the source language
+                    third_la_collection.append(org_string)
+            elif third_la_is_real_trans:
+                # the system wrongly assumed the second language to be the source language
+                second_la_collection.append(org_string)
+            else:
+                logging.warn("Line ", counter, ": Both", third_name, "and", second_name, "do not have a real translation, "
+                                               "copying token into both languages (which might be wrong):",
+                             org_string, rest_string)
+                third_la_collection.append(org_string)
+                second_la_collection.append(org_string)
+        elif second_la_is_real_trans:
+            if third_la_is_real_trans:
+                # the system wrongly assumed the first language to be the source language
+                first_la_collection.append(org_string)
+            else:
+                logging.warn("Line ", counter, ": Both", third_name, "and", first_name, "do not have a real translation, "
+                                               "copying token into both languages (which might be wrong):",
+                             org_string, rest_string)
+                third_la_collection.append(org_string)
+                first_la_collection.append(org_string)
+        else:
+            if third_la_is_real_trans:
+                logging.warn("Line ", counter, ": Both", second_name, "and", first_name ,"do not have a real translation, "
+                                               "copying token into both languages (which might be wrong):",
+                             org_string, rest_string)
+                second_la_collection.append(org_string)
+                first_la_collection.append(org_string)
+            else:
+                logging.warn("Line ", counter, ":", first_name, ",", second_name, "and", third_name, "do not have a real translation, "
+                                               "copying token into both languages (which might be wrong):",
+                             org_string, rest_string)
+                first_la_collection.append(org_string)
+                second_la_collection.append(org_string)
+                third_la_collection.append(org_string)
+
+
 
     def write_to_file(self):
         path_parts = self.path_to_translations.rsplit("/", 1)
@@ -130,11 +266,23 @@ class TransGetter:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python3 get_complete_translations.py <path_to_translations>")
+    # Debugging
+    #path_to_translations = "50_queries/translations.txt"
+
+    argparser = argparse.ArgumentParser(
+        description="Converts translated Solr queries into the format de::translation fr::translation es::translation")
+    argparser.add_argument("input_file", type=str, help="Path to file containing the translations")
+
+    argparser.add_argument("source_language", type=str, help="The language of the source files that have been translate"
+                                                             "d. Valid codes: de for German, en for English, fr for "
+                                                             "French and es for Spanish")
+    args = argparser.parse_args()
+
+    if args.source_language not in {"de", "en", "es", "fr"}:
+        print("Invalid language code:", args.source_language)
+        print("Valid codes: de for German, en for English, fr for French and es for Spanish")
         sys.exit(1)
-    path_to_translations = sys.argv[1]
-    # path_to_translations = "server_results/4lex_diff/translations.de"
-    extractor = TransGetter(path_to_translations)
+
+    extractor = TransGetter(args.input_file, args.source_language)
     extractor.read_in()
     extractor.write_to_file()
