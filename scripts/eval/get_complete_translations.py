@@ -28,10 +28,8 @@ class TransGetter:
             counter = 0
             for line in f:
                 counter += 1
-                if counter == 1:
+                if counter == 33:
                     print("Bla")
-                if counter == 50:
-                    print("Blo")
                 self.german_is_real_translation = False
                 self.english_is_real_translation = False
                 self.french_is_real_translation = False
@@ -43,7 +41,6 @@ class TransGetter:
                 self.french = []
                 self.spanish = []
                 parts = line.split("AU:")
-                add_whitespace = False
                 #to_skip = 0
                 # ignore parts[0] because it only contains original fields (whose strings are the same as the one at the
                 # beginning of parts[1]
@@ -67,33 +64,27 @@ class TransGetter:
                         original += original_string
                         rest = current_string.replace(original + ")", "", 1)
                         self.search_for_translations(rest, original_string, counter)
-                no_real_translation = True
-                if self.german_is_real_translation:
-                    no_real_translation = False
+
+                if self.german_is_real_translation | self.english_is_real_translation | self.french_is_real_translation | self.spanish_is_real_translation:
                     query_translations["de"] = " ".join(self.german)
-                if self.english_is_real_translation:
-                    no_real_translation = False
                     query_translations["en"] = " ".join(self.english)
-                if self.french_is_real_translation:
-                    no_real_translation = False
                     query_translations["fr"] = " ".join(self.french)
-                if self.spanish_is_real_translation:
-                    no_real_translation = False
                     query_translations["es"] = " ".join(self.spanish)
 
-                if no_real_translation:
+                else:
                     query_translations["org"] = original
 
                 self.translations.append(query_translations)
 
-    @staticmethod
-    def search_for_translation(rest_string, regex, collection_to_append):
+    def search_for_translation(self, rest_string, regex, collection_to_append, org_string):
         if regex.search(rest_string):
             # strip because the regex also matches trailing whitespace since it could also be whitespace
             # in a phrase
             la_string = " ".join(regex.findall(rest_string))
             collection_to_append.append(la_string)
             return True
+        elif self.source_language == "none":
+            collection_to_append.append(org_string)
         return False
 
     def check_source_language(self, la_code, current_is_real_trans):
@@ -114,30 +105,31 @@ class TransGetter:
 
     def search_for_translations(self, rest_string, org_string, counter):
         wrong_source_language = False
-        current_german_is_real_trans = self.search_for_translation(rest_string, self.re_german, self.german)
+        current_german_is_real_trans = self.search_for_translation(rest_string, self.re_german, self.german, org_string)
         wrong_source_language = wrong_source_language | self.check_source_language("de", current_german_is_real_trans)
 
-        current_english_is_real_trans = self.search_for_translation(rest_string, self.re_english, self.english)
+        current_english_is_real_trans = self.search_for_translation(rest_string, self.re_english, self.english, org_string)
         wrong_source_language = wrong_source_language | self.check_source_language("en", current_english_is_real_trans)
 
-        current_french_is_real_trans = self.search_for_translation(rest_string, self.re_french, self.french)
+        current_french_is_real_trans = self.search_for_translation(rest_string, self.re_french, self.french, org_string)
         wrong_source_language = wrong_source_language | self.check_source_language("fr", current_french_is_real_trans)
 
-        current_spanish_is_real_trans = self.search_for_translation(rest_string, self.re_spanish, self.spanish)
+        current_spanish_is_real_trans = self.search_for_translation(rest_string, self.re_spanish, self.spanish, org_string)
         wrong_source_language = wrong_source_language | self.check_source_language("es", current_spanish_is_real_trans)
 
-        # if there is no real translation at all, org_string should be copied (this is needed for cases where a
-        # translation consists of less tokens than the source)
-        if not current_german_is_real_trans and not current_english_is_real_trans and not current_french_is_real_trans and not current_spanish_is_real_trans:
-            self.german.append(org_string)
-            self.english.append(org_string)
-            self.french.append(org_string)
-            self.spanish.append(org_string)
-        elif wrong_source_language:
-            self.add_copy_to_wrong_source_language(current_german_is_real_trans, current_english_is_real_trans,
-                                                   current_french_is_real_trans, current_spanish_is_real_trans,
-                                                   org_string, rest_string, counter)
-
+        # for none source, tokens are already copied in search_for_translation if there is no real translation
+        if self.source_language != "none":
+            # if there is no real translation at all, org_string should be copied (this is needed for cases where a
+            # translation consists of less tokens than the source)
+            if not current_german_is_real_trans and not current_english_is_real_trans and not current_french_is_real_trans and not current_spanish_is_real_trans:
+                self.german.append(org_string)
+                self.english.append(org_string)
+                self.french.append(org_string)
+                self.spanish.append(org_string)
+            elif wrong_source_language:
+                self.add_copy_to_wrong_source_language(current_german_is_real_trans, current_english_is_real_trans,
+                                                       current_french_is_real_trans, current_spanish_is_real_trans,
+                                                       org_string, rest_string, counter)
 
     def add_copy_to_wrong_source_language(self, current_german_is_real_trans, current_english_is_real_trans,
                                           current_french_is_real_trans, current_spanish_is_real_trans, org_string,
@@ -255,6 +247,9 @@ class TransGetter:
                 query_translations = self.translations[i]
                 first = True
                 for (code, trans) in query_translations.items():
+                    # do not write translations into source_language
+                    if code == self.source_language:
+                        continue
                     if trans == "":
                         logging.warning('Empty translation found in {}-th line'.format(i+1))
                         continue
@@ -267,7 +262,7 @@ class TransGetter:
 
 if __name__ == "__main__":
     # Debugging
-    #path_to_translations = "50_queries/translations.txt"
+    #extractor = TransGetter("50_queries/translations.txt", "en")
 
     argparser = argparse.ArgumentParser(
         description="Converts translated Solr queries into the format de::translation fr::translation es::translation")
@@ -275,12 +270,12 @@ if __name__ == "__main__":
 
     argparser.add_argument("source_language", type=str, help="The language of the source files that have been translate"
                                                              "d. Valid codes: de for German, en for English, fr for "
-                                                             "French and es for Spanish")
+                                                             "French, es for Spanish and none for none")
     args = argparser.parse_args()
 
-    if args.source_language not in {"de", "en", "es", "fr"}:
+    if args.source_language not in {"de", "en", "es", "fr", "none"}:
         print("Invalid language code:", args.source_language)
-        print("Valid codes: de for German, en for English, fr for French and es for Spanish")
+        print("Valid codes: de for German, en for English, fr for French, es for Spanish and none for none")
         sys.exit(1)
 
     extractor = TransGetter(args.input_file, args.source_language)
