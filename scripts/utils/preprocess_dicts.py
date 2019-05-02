@@ -142,6 +142,10 @@ def read_in_solr(input_path, stopwords, diff):
                 duplicate_needed = True
                 source_word_duplicate = rreplace(source_word, 'or', 'our', 1)
 
+            # delete unnecessary annotation before removing punctuation
+            source_word = source_word.replace('[dokumenttyp]', '').strip()
+
+
             # remove diacritics
             source_word = unicodedata.normalize('NFKD', source_word).encode('ASCII', 'ignore').decode()
 
@@ -151,8 +155,7 @@ def read_in_solr(input_path, stopwords, diff):
             # Replace whitespace that consists of at least two characters with one ws character
             source_word = replace_regex_with_whitespace(source_word, whitespace_regex)
 
-            # delete unnecessary annotation
-            source_word = source_word.replace('[dokumenttyp]', '').strip()
+
 
             # source word might be empty after all these normalization steps -> remove whole entry
             if source_word.strip() == "":
@@ -166,6 +169,8 @@ def read_in_solr(input_path, stopwords, diff):
             la_dict[source_word] = dict()
 
             if duplicate_needed:
+                # delete unnecessary annotation before removing punctuation
+                source_word_duplicate = source_word_duplicate.replace('[dokumenttyp]', '').strip()
                 source_word_duplicate = unicodedata.normalize('NFKD', source_word_duplicate).encode('ASCII', 'ignore').decode()
                 source_word_duplicate = replace_regex_with_whitespace(source_word_duplicate, punctuation_regex)
                 # Replace whitespace that consists of at least two characters with one ws character
@@ -194,6 +199,9 @@ def read_in_solr(input_path, stopwords, diff):
                     break
                 translation = translation.replace('ß', 'ss')
 
+                # delete unnecessary annotation before removing punctuation
+                translation = translation.replace('[dokumenttyp]', '').strip()
+
                 translation = unicodedata.normalize('NFKD', translation).encode(encoding='ASCII', errors='ignore').decode()
 
                 # String.punctuation only knows ASCII punctuation
@@ -202,7 +210,6 @@ def read_in_solr(input_path, stopwords, diff):
                 # Replace whitespace that consists of at least two characters with one ws character
                 translation = replace_regex_with_whitespace(translation, whitespace_regex)
 
-                translation = translation.replace('[dokumenttyp]', '').strip()
                 if source_word != translation:
                     different_entries_original = True
                 if source_word_duplicate != translation:
