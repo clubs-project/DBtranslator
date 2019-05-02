@@ -1,37 +1,37 @@
 #!/bin/sh
 
-python3 get_complete_translations.py server_results/4lex_diff/translations.de
-python3 get_complete_translations.py server_results/4lex_diff/translations.en
-python3 get_complete_translations.py server_results/4lex_diff/translations.fr
-python3 get_complete_translations.py server_results/4lex_diff/translations.es
-python3 get_complete_translations.py server_results/4lex_diff/translations.none
+python3 get_complete_translations.py server_results/4lex_diff/translations.de de
+python3 get_complete_translations.py server_results/4lex_diff/translations.en en
+python3 get_complete_translations.py server_results/4lex_diff/translations.fr fr
+python3 get_complete_translations.py server_results/4lex_diff/translations.es es
+python3 get_complete_translations.py server_results/4lex_diff/translations.none none
 
-python3 get_complete_translations.py server_results/4lex_non_diff/translations.de
-python3 get_complete_translations.py server_results/4lex_non_diff/translations.en
-python3 get_complete_translations.py server_results/4lex_non_diff/translations.fr
-python3 get_complete_translations.py server_results/4lex_non_diff/translations.es
-python3 get_complete_translations.py server_results/4lex_non_diff/translations.none
+python3 get_complete_translations.py server_results/4lex_non_diff/translations.de de
+python3 get_complete_translations.py server_results/4lex_non_diff/translations.en en
+python3 get_complete_translations.py server_results/4lex_non_diff/translations.fr fr
+python3 get_complete_translations.py server_results/4lex_non_diff/translations.es es
+python3 get_complete_translations.py server_results/4lex_non_diff/translations.none none
 
-python3 get_complete_translations.py server_results/wikidata_diff/translations.de
-python3 get_complete_translations.py server_results/wikidata_diff/translations.en
-python3 get_complete_translations.py server_results/wikidata_diff/translations.fr
-python3 get_complete_translations.py server_results/wikidata_diff/translations.es
-python3 get_complete_translations.py server_results/wikidata_diff/translations.none
+python3 get_complete_translations.py server_results/wikidata_diff/translations.de de
+python3 get_complete_translations.py server_results/wikidata_diff/translations.en en
+python3 get_complete_translations.py server_results/wikidata_diff/translations.fr fr
+python3 get_complete_translations.py server_results/wikidata_diff/translations.es es
+python3 get_complete_translations.py server_results/wikidata_diff/translations.none none
 
-python3 get_complete_translations.py server_results/wikidata_non_diff/translations.de
-python3 get_complete_translations.py server_results/wikidata_non_diff/translations.en
-python3 get_complete_translations.py server_results/wikidata_non_diff/translations.fr
-python3 get_complete_translations.py server_results/wikidata_non_diff/translations.es
-python3 get_complete_translations.py server_results/wikidata_non_diff/translations.none
+python3 get_complete_translations.py server_results/wikidata_non_diff/translations.de de
+python3 get_complete_translations.py server_results/wikidata_non_diff/translations.en en
+python3 get_complete_translations.py server_results/wikidata_non_diff/translations.fr fr
+python3 get_complete_translations.py server_results/wikidata_non_diff/translations.es es
+python3 get_complete_translations.py server_results/wikidata_non_diff/translations.none none
 
-python3 get_complete_translations.py server_results/mesh/translations.de
-python3 get_complete_translations.py server_results/mesh/translations.en
-python3 get_complete_translations.py server_results/mesh/translations.fr
-python3 get_complete_translations.py server_results/mesh/translations.es
-python3 get_complete_translations.py server_results/mesh/translations.none
+python3 get_complete_translations.py server_results/mesh/translations.de de
+python3 get_complete_translations.py server_results/mesh/translations.en en
+python3 get_complete_translations.py server_results/mesh/translations.fr fr
+python3 get_complete_translations.py server_results/mesh/translations.es es
+python3 get_complete_translations.py server_results/mesh/translations.none none
 
-python3 get_complete_translations.py server_results/mesh_4_lex_wikidata/translations.de
-python3 get_complete_translations.py server_results/mesh_4_lex_wikidata/translations.en
-python3 get_complete_translations.py server_results/mesh_4_lex_wikidata/translations.fr
-python3 get_complete_translations.py server_results/mesh_4_lex_wikidata/translations.es
-python3 get_complete_translations.py server_results/mesh_4_lex_wikidata/translations.none
+python3 get_complete_translations.py server_results/mesh_4_lex_wikidata/translations.de de
+python3 get_complete_translations.py server_results/mesh_4_lex_wikidata/translations.en en
+python3 get_complete_translations.py server_results/mesh_4_lex_wikidata/translations.fr fr
+python3 get_complete_translations.py server_results/mesh_4_lex_wikidata/translations.es es
+python3 get_complete_translations.py server_results/mesh_4_lex_wikidata/translations.none none
