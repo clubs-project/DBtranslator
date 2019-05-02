@@ -35,3 +35,9 @@ python3 get_complete_translations.py server_results/mesh_4_lex_wikidata/translat
 python3 get_complete_translations.py server_results/mesh_4_lex_wikidata/translations.fr fr
 python3 get_complete_translations.py server_results/mesh_4_lex_wikidata/translations.es es
 python3 get_complete_translations.py server_results/mesh_4_lex_wikidata/translations.none none
+
+python3 get_complete_translations.py server_results/mesh_4lex_non_diff/translations.de de
+python3 get_complete_translations.py server_results/mesh_4lex_non_diff/translations.en en
+python3 get_complete_translations.py server_results/mesh_4lex_non_diff/translations.fr fr
+python3 get_complete_translations.py server_results/mesh_4lex_non_diff/translations.es es
+python3 get_complete_translations.py server_results/mesh_4lex_non_diff/translations.none none

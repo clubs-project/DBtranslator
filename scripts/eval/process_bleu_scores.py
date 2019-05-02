@@ -13,14 +13,18 @@ class Processor:
         self.cur_tgt = None
         self.without_stopwords = False
         self.more_than_one_dict = more_than_one_dict
+        self.dicts = ["mesh_4lex_wikidata", "mesh_4lex_non_diff" , "mesh", "4lex_non_diff", "4lex_diff",
+                      "wikidata_non_diff", "wikidata_diff"]
 
     def read_in(self):
         with open(self.bleu_file, 'r') as f:
             for line in f:
                 if line.startswith("Results"):
                     if "Mesh" in line:
-                        if "concatenation" in line:
+                        if "wikidata" in line:
                             self.cur_dict = "mesh_4lex_wikidata"
+                        elif "concatenation" in line:
+                            self.cur_dict = "mesh_4lex_non_diff"
                         else:
                             self.cur_dict = "mesh"
                     elif "quadrilingual" in line:
@@ -99,7 +103,7 @@ class Processor:
         table_with_stopwords = dict()
         table_without_stopwords = dict()
         if self.more_than_one_dict:
-            for dict_key in ["mesh_4lex_wikidata", "mesh", "4lex_non_diff", "4lex_diff", "wikidata_non_diff", "wikidata_diff"]:
+            for dict_key in self.dicts:
                 table_with_stopwords[dict_key] = self.compute_average_scores(False, dict_key)
                 table_without_stopwords[dict_key] = self.compute_average_scores(True, dict_key)
             with open(output_path, "w") as f:
@@ -128,10 +132,9 @@ class Processor:
         file.write("\t".join(values))
         file.write("\n")
 
-    @staticmethod
-    def write_table_to_file(table, file):
+    def write_table_to_file(self, table, file):
         file.write("\tbleu\tbleu-1\tbleu-2\tbleu-3\tbleu-4\n")
-        for dict_key in ["mesh_4lex_wikidata", "mesh", "4lex_non_diff", "4lex_diff", "wikidata_non_diff", "wikidata_diff"]:
+        for dict_key in self.dicts:
             file.write(dict_key)
             for score_key in ["bleu", "bleu-1", "bleu-2", "bleu-3", "bleu-4"]:
                 file.write("\t" + str(round(table[dict_key][score_key], 2)))

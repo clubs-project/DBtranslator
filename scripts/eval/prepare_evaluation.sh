@@ -54,6 +54,17 @@ python3 convert_target_qfr_into_bleu_format.py server_results/mesh_4_lex_wikidat
 python3 convert_target_qfr_into_bleu_format.py server_results/mesh_4_lex_wikidata/target_qfr.none -sw ../lexicons/DeEnEsFr-preprocessed.sw  
 python3 convert_target_qfr_into_bleu_format.py server_results/mesh_4_lex_wikidata/target_qfr.none
 
+python3 convert_target_qfr_into_bleu_format.py server_results/mesh_4lex_non_diff/target_qfr.de -sw ../lexicons/DeEnEsFr-preprocessed.sw  
+python3 convert_target_qfr_into_bleu_format.py server_results/mesh_4lex_non_diff/target_qfr.de
+python3 convert_target_qfr_into_bleu_format.py server_results/mesh_4lex_non_diff/target_qfr.en -sw ../lexicons/DeEnEsFr-preprocessed.sw  
+python3 convert_target_qfr_into_bleu_format.py server_results/mesh_4lex_non_diff/target_qfr.en
+python3 convert_target_qfr_into_bleu_format.py server_results/mesh_4lex_non_diff/target_qfr.es -sw ../lexicons/DeEnEsFr-preprocessed.sw  
+python3 convert_target_qfr_into_bleu_format.py server_results/mesh_4lex_non_diff/target_qfr.es
+python3 convert_target_qfr_into_bleu_format.py server_results/mesh_4lex_non_diff/target_qfr.fr -sw ../lexicons/DeEnEsFr-preprocessed.sw  
+python3 convert_target_qfr_into_bleu_format.py server_results/mesh_4lex_non_diff/target_qfr.fr
+python3 convert_target_qfr_into_bleu_format.py server_results/mesh_4lex_non_diff/target_qfr.none -sw ../lexicons/DeEnEsFr-preprocessed.sw  
+python3 convert_target_qfr_into_bleu_format.py server_results/mesh_4lex_non_diff/target_qfr.none
+
 python3 convert_target_qfr_into_bleu_format.py server_results/wikidata_diff/target_qfr.de -sw ../lexicons/DeEnEsFr-preprocessed.sw  
 python3 convert_target_qfr_into_bleu_format.py server_results/wikidata_diff/target_qfr.de
 python3 convert_target_qfr_into_bleu_format.py server_results/wikidata_diff/target_qfr.en -sw ../lexicons/DeEnEsFr-preprocessed.sw  

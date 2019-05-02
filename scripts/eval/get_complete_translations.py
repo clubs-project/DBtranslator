@@ -28,8 +28,8 @@ class TransGetter:
             counter = 0
             for line in f:
                 counter += 1
-                if counter == 33:
-                    print("Bla")
+                """if counter == 33:
+                    print("Bla")"""
                 self.german_is_real_translation = False
                 self.english_is_real_translation = False
                 self.french_is_real_translation = False
