@@ -114,14 +114,14 @@ Pre-trained models can be found in the project's Seafile ```CLIR-PubPsych/Code/M
 ├── modelTC.EpWP.es
 ├── modelTC.EpWP.fr
 └── CT
-    ├── meshSplit2.dekey.txt
-    ├── meshSplit2.enkey.txt
-    ├── meshSplit2.eskey.txt
-    ├── meshSplit2.frkey.txt
-    ├── quadLexicon.dekey.txt
-    ├── quadLexicon.enkey.txt
-    ├── quadLexicon.eskey.txt
-    ├── quadLexicon.frkey.txt
+    ├── mesh2.dekey.txt
+    ├── mesh2.enkey.txt
+    ├── mesh2.eskey.txt
+    ├── mesh2.frkey.txt
+    ├── quadLexicon5.dekey.txt
+    ├── quadLexicon5.enkey.txt
+    ├── quadLexicon5.eskey.txt
+    ├── quadLexicon5.frkey.txt
     └── README
 ```
 

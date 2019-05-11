@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """ Translates the controlled terms previously extracted with preproField4trad.py.
-    MeSH+Wikipedia+Apertium+manual quad-lexicons are used. 
+    MeSH+Wikipedia+Apertium+manual+Wikidata quad-lexicons are used. 
     Translation at word level is applied if the complete CT is not in the dictionary, 
     and the source is used as translation in case it is missing
     Date: 02.01.2018
@@ -175,8 +175,8 @@ def main(inF, outF):
     global l1
 
     language = os.path.splitext(inF)[1].replace(".","")
-    #ctFile = ctPath + "quadLexicon."+language+"key.txt"
-    ctFile = ctPath + "meshSplit2."+language+"key.txt"
+    ctFile = ctPath + "quadLexicon5."+language+"key.txt"
+    #ctFile = ctPath + "mesh2."+language+"key.txt"
     print(ctFile)
 
     if(language=="en"):
