@@ -22,6 +22,54 @@ sed -i "s/^s '/s'/g" $FILE
 sed -i "s/ n '/ n'/g" $FILE
 sed -i "s/^n '/n'/g" $FILE
 
+sed -i "s/ c' / c'/g" $FILE
+sed -i "s/^c' /c'/g" $FILE
+sed -i "s/qu' /qu'/g" $FILE
+sed -i "s/ l' / l'/g" $FILE
+sed -i "s/^l' /l'/g" $FILE
+sed -i "s/ d' / d'/g" $FILE
+sed -i "s/^d' /d'/g" $FILE
+sed -i "s/ s' / s'/g" $FILE
+sed -i "s/^s' /s'/g" $FILE
+sed -i "s/ n' / n'/g" $FILE
+sed -i "s/^n' /n'/g" $FILE
+
+sed -i "s/ C '/ C'/g" $FILE
+sed -i "s/^C '/C'/g" $FILE
+sed -i "s/Qu '/Qu'/g" $FILE
+sed -i "s/ L '/ L'/g" $FILE
+sed -i "s/^L '/L'/g" $FILE
+sed -i "s/ D '/ D'/g" $FILE
+sed -i "s/^D '/D'/g" $FILE
+sed -i "s/ S '/ S'/g" $FILE
+sed -i "s/^S '/S'/g" $FILE
+sed -i "s/ N '/ N'/g" $FILE
+sed -i "s/^N '/N'/g" $FILE
+
+sed -i "s/ C' / C'/g" $FILE
+sed -i "s/^C' /C'/g" $FILE
+sed -i "s/Qu' /Qu'/g" $FILE
+sed -i "s/ L' / L'/g" $FILE
+sed -i "s/^L' /L'/g" $FILE
+sed -i "s/ D' / D'/g" $FILE
+sed -i "s/^D' /D'/g" $FILE
+sed -i "s/ S' / S'/g" $FILE
+sed -i "s/^S' /S'/g" $FILE
+sed -i "s/ N' / N'/g" $FILE
+sed -i "s/^N' /N'/g" $FILE
+
+#saxon genitive
+sed -i "s/ 's /'s /g" $FILE
+
+# Broken entities
+sed -i -e "s/& amp;/\&/g"  $FILE
+sed -i -e "s/& gt;/>/g"  $FILE
+sed -i -e "s/& lt;/</g"  $FILE
+sed -i -e "s/& Amp;/\&/g" $FILE
+sed -i -e "s/& Gt;/>/g"  $FILE
+sed -i -e 's/& quot;/\"/g'  $FILE
+
+
 # Unacceptable mistakes
 sed -i "s/© Derecho/© Copyright/g" $FILE
 sed -i "s/Derecho (/Copyright (/g" $FILE
