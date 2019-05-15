@@ -43,7 +43,8 @@ def splitLongSentences(sentences):
             subsentences = []
             if (len(semicolonsPos) >= 1):
                 subsentences = sent.split(";")
-                sentencesShort.append(subsentences+' ;')
+                for subsent in subsentences:
+                    sentencesShort.append(subsent+';')
             else:
                 for i in xrange(0, l, maxSentLength):
                     subsentences = ' '.join(words[i:i+maxSentLength])
