@@ -16,7 +16,7 @@ import sys
 import sentenceSplitter as SS
 
 
-maxSentLength = 100;
+maxSentLength = 60;
 
 # Simple compatibility
 try:
@@ -43,13 +43,11 @@ def splitLongSentences(sentences):
             subsentences = []
             if (len(semicolonsPos) >= 1):
                 subsentences = sent.split(";")
-                for subsent in subsentences:
-                    sentencesShort.append(subsent+';')
+                sentencesShort.append(subsentences+' ;')
             else:
                 for i in xrange(0, l, maxSentLength):
                     subsentences = ' '.join(words[i:i+maxSentLength])
-            for subsent in subsentences:
-                sentencesShort.append(subsent)
+                    sentencesShort.append(subsentences)
 
         else:
            sentencesShort.append(sent)
