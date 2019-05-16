@@ -304,9 +304,9 @@ def main(dicts, sw_file, command, la_code, non_solr, diff, verbose):
 
             # we can make two different versions of the dicts: a preprocessed one and a non-preprocessed one
             if non_solr:
-                main_dict = read_in_non_solr(dicts[0], diff)
+                main_dict = read_in_non_solr(dicts[0], diff, verbose)
             else:
-                main_dict = read_in_solr(dicts[0], stopwords, diff)
+                main_dict = read_in_solr(dicts[0], stopwords, diff, verbose)
         else:
             print("Merging previous dict and dict", str(i+1), "...")
             if non_solr:
