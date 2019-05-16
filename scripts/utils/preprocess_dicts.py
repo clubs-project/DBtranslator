@@ -235,12 +235,13 @@ def read_in_solr(input_path, stopwords, diff, verbose):
                         print(la_cd + ":" + transl)
                 la_dict.pop(source_word, None)
 
-            if diff and not different_entries_duplicate:
-                if verbose:
-                    print("Removing entry for duplicate source word:", source_word_duplicate)
-                    for (la_cd, transl) in la_dict[source_word_duplicate].items():
-                        print(la_cd + ":" + transl)
-                la_dict.pop(source_word_duplicate, None)
+            if source_word_duplicate:
+                if diff and not different_entries_duplicate:
+                    if verbose:
+                        print("Removing entry for duplicate source word:", source_word_duplicate)
+                        for (la_cd, transl) in la_dict[source_word_duplicate].items():
+                            print(la_cd + ":" + transl)
+                    la_dict.pop(source_word_duplicate, None)
 
             if delete_entry:
                 la_dict.pop(source_word, None)
