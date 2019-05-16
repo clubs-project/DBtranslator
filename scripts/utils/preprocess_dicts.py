@@ -22,7 +22,7 @@ def rreplace(s, old, new, num_occ):
     return new.join(li)
 
 
-def read_in_non_solr(input_path, diff):
+def read_in_non_solr(input_path, diff, verbose):
     '''Simply reads in a dictionary, no preprocessing at all'''
     la_dict = dict()
     with open(input_path, "r") as f:
@@ -55,6 +55,10 @@ def read_in_non_solr(input_path, diff):
                 la_dict[source_word][la_code] = translation
 
             if diff and not different_entries:
+                if verbose:
+                    print("Removing entry for source word:", source_word)
+                    for (la_cd, transl) in la_dict[source_word].items():
+                        print(la_cd + ":" + transl)
                 delete_entry = True
 
             if delete_entry:
@@ -67,7 +71,7 @@ def replace_regex_with_whitespace(word, regex):
     return regex.sub(' ', word)
 
 
-def read_in_solr(input_path, stopwords, diff):
+def read_in_solr(input_path, stopwords, diff, verbose):
     '''Reads in a dictionary and cleans it:
     - lowercases the token
     - removes diacritics ('ü' -> 'u')
@@ -225,9 +229,17 @@ def read_in_solr(input_path, stopwords, diff):
                     la_dict[source_word_duplicate][la_code] = translation
 
             if diff and not different_entries_original:
+                if verbose:
+                    print("Removing entry for source word:", source_word)
+                    for (la_cd, transl) in la_dict[source_word].items():
+                        print(la_cd + ":" + transl)
                 la_dict.pop(source_word, None)
 
             if diff and not different_entries_duplicate:
+                if verbose:
+                    print("Removing entry for duplicate source word:", source_word_duplicate)
+                    for (la_cd, transl) in la_dict[source_word_duplicate].items():
+                        print(la_cd + ":" + transl)
                 la_dict.pop(source_word_duplicate, None)
 
             if delete_entry:
@@ -282,7 +294,7 @@ def read_in_sw_file(sw_file):
     return stopwords
 
 
-def main(dicts, sw_file, command, la_code, non_solr, diff):
+def main(dicts, sw_file, command, la_code, non_solr, diff, verbose):
     """ dicts[0] > dicts[1] > ... in terms of priority"""
     stopwords = read_in_sw_file(sw_file)
     main_dict = dict()
@@ -298,9 +310,9 @@ def main(dicts, sw_file, command, la_code, non_solr, diff):
         else:
             print("Merging previous dict and dict", str(i+1), "...")
             if non_solr:
-                main_dict = merge_dicts(main_dict, read_in_non_solr(dicts[i], diff))
+                main_dict = merge_dicts(main_dict, read_in_non_solr(dicts[i], diff, verbose))
             else:
-                main_dict = merge_dicts(main_dict, read_in_solr(dicts[i], stopwords, diff))
+                main_dict = merge_dicts(main_dict, read_in_solr(dicts[i], stopwords, diff, verbose))
     path_prefix = concatenate_string_list(dicts[0].split("/")[:-1], "/", add_at_last_string=True)
     path = path_prefix
     previous_abbr = ""
@@ -355,6 +367,8 @@ if __name__=="__main__":
     argparser.add_argument("-d", "--only-diff", dest="diff", action="store_true",
                            help="If this option is set, a term that is exactly the same in all four languages will not "
                                 "be part of the final dictionary.")
+    argparser.add_argument("-v", "--verbose", dest="verb", action="store_true",
+                           help="Verbose outputs.")
     args = argparser.parse_args()
 
     command = ["preprocess_dicts.py", args.sw_file] + args.dicts
@@ -365,5 +379,5 @@ if __name__=="__main__":
     if args.diff:
         command += ["--only-diff"]
 
-    main(args.dicts, args.sw_file, command, args.la_code, args.non_solr, args.diff)
+    main(args.dicts, args.sw_file, command, args.la_code, args.non_solr, args.diff, args.verb)
 
