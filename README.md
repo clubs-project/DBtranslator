@@ -99,29 +99,24 @@ Pre-trained models can be found in the project's Seafile ```CLIR-PubPsych/Code/M
 
 ```
 .
-├── general.tc50shuf.w.bpe.L1.json
-├── general.tc50shuf.w.bpe.L2.json
+├── final.50.shuf.bpe.L1.yml
 ├── L1L2.allw.bpe
-├── model_L1L2w3_v80k.iter1540000_baseline.npz
-├── model_L1L2w3_v80k.iter1540000.npz.json
-├── model_L1L2w3_v80k.iter1560000_adaptepoch1.npz
-├── model_L1L2w3_v80k.iter1580000_adaptepoch2.npz
-├── model_L1L2w3_v80k.iter1600000_adaptepoch3.npz
-├── model_L1L2w3_v80k.iter1620000_adaptepoch4.npz
-├── model_L1L2w3_v80k.iter1640000_adaptepoch5.npz
+├── model_clubsBaselineLR4Big.iter920000.npz
+├── model_clubsBaselineLR4BigADback.iter10000.npz
+├── model_clubsBaselineLR4BigADbackDr02.iter38000.npz
 ├── modelTC.EpWP.de
 ├── modelTC.EpWP.en
 ├── modelTC.EpWP.es
 ├── modelTC.EpWP.fr
 └── CT
-    ├── meshSplit2.dekey.txt
-    ├── meshSplit2.enkey.txt
-    ├── meshSplit2.eskey.txt
-    ├── meshSplit2.frkey.txt
-    ├── quadLexicon.dekey.txt
-    ├── quadLexicon.enkey.txt
-    ├── quadLexicon.eskey.txt
-    ├── quadLexicon.frkey.txt
+    ├── mesh2.dekey.txt
+    ├── mesh2.enkey.txt
+    ├── mesh2.eskey.txt
+    ├── mesh2.frkey.txt
+    ├── quadLexicon5.dekey.txt
+    ├── quadLexicon5.enkey.txt
+    ├── quadLexicon5.eskey.txt
+    ├── quadLexicon5.frkey.txt
     └── README
 ```
 
