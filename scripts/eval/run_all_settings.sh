@@ -9,7 +9,7 @@ touch /home/sohe01/evaluations/stats.txt &&
 cp -f /raid/bin/pubpsych_different_evaluation_settings/ZpidQParser.java /raid/bin/PubPsychSolr/src/main/java/de/zpid/pubpsych/search/query/queryparsers/ &&
 
 
-# Mesh_4lex_wikidata_wikidata_non_diff
+# Mesh_4lex_wikidata_non_diff
 cp -f /raid/bin/pubpsych_different_evaluation_settings/mesh_4lex_wikidata_non_diff/QueryFieldRewriter.java /raid/bin/PubPsychSolr/src/main/java/de/zpid/pubpsych/search/query/queryparsers/fieldrewriters/ &&
 cp -f /raid/bin/pubpsych_different_evaluation_settings/mesh_4lex_wikidata_non_diff/ZpidQParserPlugin.java /raid/bin/PubPsychSolr/src/main/java/de/zpid/pubpsych/search/query/queryparsers/ &&
 cp -f /raid/data/sohe01/dicts/evaluation/meshSplit2.solr.non-diff.all-languages.txt /raid/bin/PubPsychSolr/src/main/resources/queryfieldrewriter/ &&

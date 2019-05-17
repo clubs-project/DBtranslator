@@ -13,7 +13,7 @@ class Processor:
         self.cur_tgt = None
         self.without_stopwords = False
         self.more_than_one_dict = more_than_one_dict
-        self.dicts = ["mesh_4lex_wikidata", "mesh_4lex_non_diff" , "mesh", "4lex_non_diff", "4lex_diff",
+        self.dicts = ["mesh_4lex_wikidata_non_diff", "mesh_4lex_non_diff" , "mesh", "4lex_non_diff", "4lex_diff",
                       "wikidata_non_diff", "wikidata_diff"]
 
     def read_in(self):
@@ -22,7 +22,7 @@ class Processor:
                 if line.startswith("Results"):
                     if "Mesh" in line:
                         if "wikidata" in line:
-                            self.cur_dict = "mesh_4lex_wikidata"
+                            self.cur_dict = "mesh_4lex_wikidata_non_diff"
                         elif "concatenation" in line:
                             self.cur_dict = "mesh_4lex_non_diff"
                         else:
