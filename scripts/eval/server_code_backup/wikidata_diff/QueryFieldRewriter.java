@@ -245,11 +245,19 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
         String[] laCodeAndTranslation = entry.split(":");
         if (laCodeAndTranslation.length == 1) {
             if (mesh) {
-                LOG.warn("An empty translation has been found while reading in the MeSH dictionary:" + laCodeAndTranslation[0]);
+                LOG.warn("An empty translation has been found while reading in the MeSH dictionary:" + entry);
             } else {
-                LOG.warn("An empty translation has been found while reading in the mixed dictionary:" + laCodeAndTranslation[0]);
+                LOG.warn("An empty translation has been found while reading in the mixed dictionary:" + entry);
             }
             return;
+        }
+        else if (laCodeAndTranslation[1].isEmpty()){
+            if (mesh) {
+                LOG.warn("An empty string as translation has been found while reading in the MeSh dictionary:" + entry);
+            } else {
+                LOG.warn("An empty string as translation has been found while reading in the MeSh dictionary" + entry);
+            }
+            return;            
         }
         translationMap.put(laCodeAndTranslation[0].trim(), laCodeAndTranslation[1].trim());
     }
@@ -539,7 +547,7 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
                             possibleSingularDe + "\" for token " + token + 
                             " in mixed dict.");
                 } else if (checkSingular(possibleSingularFr, "fr", token, 
-                        countInStats, false, translationByToken)){
+              countInStats, false, translationByToken)){
                     LOG.debug("Found possible French singular form \"" + 
                             possibleSingularFr + "\" for token " + token + 
                             " in mixed dict.");

@@ -41,6 +41,8 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
     private static final Logger LOG = LoggerFactory.getLogger(QueryFieldRewriter.class);
     private final Map<String, Map<String, String>> meshDict = new HashMap<>();
 
+    // the second dictionary consisting of the four non-high-quality dictionaries
+    private final Map<String, Map<String, String>> mixedDict = new HashMap<>();
 
     /*a map containing original field names and language-specific field names 
       if they exist (this is not consistent for all the fields, thus we need a map)
@@ -101,9 +103,10 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
 
     private boolean hasSeenFirstQuery = false;
 
-    public QueryFieldRewriter(String pathToMeshDict, 
+    public QueryFieldRewriter(String pathToMeshDict, String pashToMixedDict,
             String pathToLaFieldNames) throws FileNotFoundException, IOException {
         readInDictionary(pathToMeshDict, true);
+        readInDictionary(pashToMixedDict, false);
         readInFieldNames(pathToLaFieldNames);
     }
     
@@ -235,7 +238,9 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
             splitEntry(parts[3], translationMap, mesh);
             if (mesh) {
                 meshDict.put(sourceWord, translationMap);
-            } 
+            } else {
+                mixedDict.put(sourceWord, translationMap);
+            }
         }
     }
 
@@ -255,7 +260,7 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
             } else {
                 LOG.warn("An empty string as translation has been found while reading in the MeSh dictionary" + entry);
             }
-            return;            
+            
         }
         translationMap.put(laCodeAndTranslation[0].trim(), laCodeAndTranslation[1].trim());
     }
@@ -447,7 +452,27 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
             seenStrings.add(original);
             return matchFieldNamesAndTranslations(meshDict.get(original), 
                     field);
-        } 
+        } else if (mixedDict.containsKey(original)) {
+            LOG.debug("The whole string is contained in the mixed dictionary.");
+            if (countInStats){
+                LOG.debug("translateWholeString: \""+ original + "\" counts towards the statistics.");
+                if (lengthOriginal > 1){
+                    backoffUsageMultiTokenLevel += 1;
+                    }
+                else {
+                    backoffUsageWordLevel += 1;
+                }
+                copyAtQueryLevel = false;
+                meshAtQueryLevel = false;
+                singularAtQueryLevel = false;
+            } else {
+                LOG.debug("translateWholeString: \""+ original + "\" doesn't count towards the "
+                        + "statistics.");
+            }
+            seenStrings.add(original);
+            return matchFieldNamesAndTranslations(mixedDict.get(original),
+                    field);
+        }
         LOG.debug("No translation for whole string found.");
         return null;
     }
@@ -469,6 +494,26 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
                         singularUsageWordLevel += 1;
                     }
                     backoffAtQueryLevel = false;
+                    copyAtMultiTokenLevel = false;
+                    copyAtQueryLevel = false;
+                    return true;
+                }
+            }
+        }
+        else {
+            if (mixedDict.containsKey(possibleSingular)){
+                Map<String, String> translationMap = mixedDict.get(possibleSingular);
+
+                /* Check whether the source language is laCode to avoid 
+                mistakes where the possible laCode singular form looks 
+                like a word in another language.*/
+                if (! translationMap.containsKey(laCode)){                        
+                    translationByToken.put(token, translationMap);
+                    if (countInStats){
+                        backoffUsageWordLevel += 1;
+                        singularUsageWordLevel += 1;
+                    }
+                    meshAtQueryLevel = false;
                     copyAtMultiTokenLevel = false;
                     copyAtQueryLevel = false;
                     return true;
@@ -525,6 +570,15 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
                 singularAtMultiTokenLevel = false;
                 copyAtMultiTokenLevel = false;
                 backoffAtQueryLevel = false;
+            } else if (mixedDict.containsKey(token)) {
+                LOG.debug("Mixed dict contains " + token);
+                translationByToken.put(token, mixedDict.get(token));
+                if (countInStats){
+                    backoffUsageWordLevel += 1;
+                }
+                singularAtMultiTokenLevel = false;
+                copyAtMultiTokenLevel = false;
+                meshAtQueryLevel = false;
             } else {
                 // no translation available: try possible singular forms
                 LOG.debug("No translations for \"" + token + "\" found, now searching for possible singular forms.");
@@ -555,11 +609,31 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
                     LOG.debug("Found possible Spanish singular form \"" + 
                             possibleSingularEs + "\" for token " + token + 
                             " in MeSH dict.");
-                } // singular forms are also not contained in the mesh dict: just copy the token
+                }
+                // look for possible singular forms in mixedDict, precedence EN > DE > FR > ES
+                else if (checkSingular(possibleSingularEn, "en", token, 
+                        countInStats, false, translationByToken)){
+                    LOG.debug("Found possible English singular form \"" + 
+                            possibleSingularEn + "\" for token " + token + 
+                            " in mixed dict.");
+                } else if (checkSingular(possibleSingularDe, "de", token, 
+                        countInStats, false, translationByToken)){
+                    LOG.debug("Found possible German singular form \"" + 
+                            possibleSingularDe + "\" for token " + token + 
+                            " in mixed dict.");
+                } else if (checkSingular(possibleSingularFr, "fr", token, 
+                        countInStats, false, translationByToken)){
+                    LOG.debug("Found possible French singular form \"" + 
+                            possibleSingularFr + "\" for token " + token + 
+                            " in mixed dict.");
+                } else if (checkSingular(possibleSingularEs, "es", token, 
+                        countInStats, false, translationByToken)){
+                    LOG.debug("Found possible Spanish singular form \"" + 
+                            possibleSingularEs + "\" for token " + token + 
+                            " in mixed dict.");
+                } // singular forms are also not contained in one of the dicts: just copy the token
                 else {
-                    LOG.debug("No possible singular form is contained in the "
-                            + "Mesh dict. The token is now copied as its own "
-                            + "translation into all languages.");
+                    LOG.debug("No possible singular form is contained in any of the dicts. The token is now copied as its own translation into all languages.");
                     Map<String, String> dummyMap = new HashMap<>();
                     dummyMap.put("de", token);
                     dummyMap.put("en", token);
@@ -948,9 +1022,22 @@ public class QueryFieldRewriter implements FieldRewriteInterface {
                             translateGroup(representative, nodesOfSameGroup,
                                     translationMap, disjunctionMaxQueries, idsOfDMQs);
 
+                        } else if (mixedDict.containsKey(wholeString)) {
+                            Map<String, String> translationMap = mixedDict.get(wholeString);
+                            LOG.debug("Found translation for whole string "
+                                    + "of group in the backoff dict.");
+                            if (countInStats){
+                                meshAtQueryLevel = false;
+                                copyAtQueryLevel = false;
+                                singularAtQueryLevel = false;
+                                backoffUsageMultiTokenLevel += 1;
+                            }
+                            translateGroup(representative, nodesOfSameGroup,
+                                    translationMap, disjunctionMaxQueries, idsOfDMQs);
                         } else{
                             LOG.debug("No translation for whole string of "
                                     + "group found.");
+                            //TODO: remember that string could not be transöated as a whole
                         }
 
                     }
