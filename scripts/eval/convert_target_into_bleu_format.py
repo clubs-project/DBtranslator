@@ -41,7 +41,7 @@ class Converter:
                     self.get_all_translations(line, la_code)
             print("Done.")
 
-    def remove_stopwords(self, matching_strings, la_code):
+    def remove_stopwords(self, matching_strings):
         # Get rid of stopwords if the converter was given a set of them
         indices_to_delete = list()
 
@@ -123,7 +123,7 @@ class Converter:
 
             matching_strings[i] = current_string
 
-        la_str = self.remove_stopwords(matching_strings, la_code)
+        la_str = self.remove_stopwords(matching_strings)
         self.translations[la_code].append(la_str)
 
     def write_to_file(self, la_code):
