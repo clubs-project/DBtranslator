@@ -16,7 +16,7 @@ def read_in(query_path):
     queries = list()
 
     # Some punctuation has to be maintained in order to mark fields etc.
-    punctuation_to_delete = string.punctuation.replace(":", "").replace("<", "").replace("=", "").replace(">", "")
+    punctuation_to_delete = string.punctuation.replace(":", "").replace("<", "").replace("=", "").replace(">", "").replace("\"", "")
     punctuation_regex = re.compile('[%s]' % re.escape(punctuation_to_delete))
     whitespace_regex = re.compile('\s\s+')
 
@@ -34,8 +34,12 @@ def read_in(query_path):
                 # String.punctuation only knows ASCII punctuation
                 raw_token = punctuation_regex.sub(' ', raw_token)
                 raw_token = whitespace_regex.sub(' ', raw_token)
-                raw_token = raw_token.replace(" ", "%20")
-                raw_tokens.append(raw_token)
+                raw_token = raw_token.strip()
+
+                # ensure that token is not empty after all the preprocessing
+                if raw_token:
+                    raw_token = raw_token.replace(" ", "%20")
+                    raw_tokens.append(raw_token)
 
             # %20 for whitespace (assuming "%" is not used in the source files)
             query = "%20".join(raw_tokens)
