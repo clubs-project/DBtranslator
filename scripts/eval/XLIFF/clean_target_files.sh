@@ -13,4 +13,11 @@ sed -E 's/\s\s/ /g' query_man2.tgt > query_man.tgt &&
 # remove empty lines
 sed '/^\s*$/d' query_man.tgt > query_man2.tgt &&
 # remove leading whitespace
-sed -E 's/^\s+//g' query_man2.tgt > query_man.tgt
+sed -E 's/^\s+//g' query_man2.tgt > query_man.tgt &&
+
+# delete lines only containing journal titles
+sed -i '37d' query_man.tgt &&
+sed -i '72d' query_man.tgt
+
+# lowercase everything
+tr '[:upper:]' '[:lower:]' < query_man.tgt > query_man2.tgt
