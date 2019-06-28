@@ -52,6 +52,9 @@ class XLIFFer:
         if match:
             match = match.group()
             match = html.unescape(match)
+            # replace 'ß' with 'ss' since unicode.normalize simply deletes the whole character
+            match = match.replace("ß", "ss")
+
             # remove diacritics
             match = unicodedata.normalize('NFKD', match).encode('ASCII', 'ignore').decode()
 
